@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams, AlertController } from 'ionic-angular';
+
+import { HomePage } from '../home/home';
 
 /*
   Generated class for the Login page.
@@ -13,10 +15,30 @@ import { NavController, NavParams } from 'ionic-angular';
 })
 export class LoginPage {
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {}
+  constructor(public navCtrl: NavController, public navParams: NavParams, 
+    public alertCtrl: AlertController) {}
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad LoginPage');
   }
+
+  login(): void {
+    this.navCtrl.setRoot(HomePage);
+  }
+
+  recoverPass(): void{
+  }
+
+  help(): void{
+    let help = this.alertCtrl.create({
+      title: 'Ajuda',
+      subTitle: 'AJUDA LUCIANO',
+      buttons: ['OK']
+    });
+    help.present();
+  }
+
+
+
 
 }

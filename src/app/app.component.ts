@@ -19,7 +19,7 @@ import { SignupPage } from '../pages/signup/signup';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = HomePage; //Change this for setting the rootPage.
+  rootPage: any = LoginPage; //Change this for setting the rootPage.
 
   pages: Array<{title: string, component: any}>;
 

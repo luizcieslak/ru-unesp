@@ -6,13 +6,33 @@
 -->
 <ion-header>
 
-  <ion-navbar>
-    <ion-title>login</ion-title>
-  </ion-navbar>
+    <ion-navbar>
+        <ion-title>login</ion-title>
+    </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+
+    <ion-list>
+
+        <ion-item>
+            <ion-label floating>Email</ion-label>
+            <ion-input type="text"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label floating>Password</ion-label>
+            <ion-input type="password"></ion-input>
+        </ion-item>
+
+    </ion-list>
+    <button (click)="login()" ion-button block>Login</button>
+    <button (click)="recoverPass()" ion-button clear>Esqueceu a senha?</button>
+    <br>
+    <button (click)="help()" ion-button clear>Ajuda</button>
+
+
 
 </ion-content>
