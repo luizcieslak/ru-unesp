@@ -6,13 +6,39 @@
 -->
 <ion-header>
 
-  <ion-navbar>
-    <ion-title>signup</ion-title>
-  </ion-navbar>
+    <ion-navbar>
+        <ion-title>Crie uma conta</ion-title>
+    </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+
+    <ion-list>
+
+        <ion-item>
+            <ion-label fixed>Nome</ion-label>
+            <ion-input type="text" value=""></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label fixed>RA</ion-label>
+            <ion-input type="text" value=""></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label fixed>Email</ion-label>
+            <ion-input type="text" value=""></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label fixed>Password</ion-label>
+            <ion-input type="password"></ion-input>
+        </ion-item>
+
+    </ion-list>
+    <button (click)="signup()" ion-button block>Criar</button>
+
 
 </ion-content>

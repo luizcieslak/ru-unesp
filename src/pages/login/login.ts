@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, NavParams, AlertController } from 'ionic-angular';
 
 import { HomePage } from '../home/home';
+import { SignupPage } from '../signup/signup';
 
 /*
   Generated class for the Login page.
@@ -36,6 +37,10 @@ export class LoginPage {
       buttons: ['OK']
     });
     help.present();
+  }
+
+  signup(): void{
+    this.navCtrl.push(SignupPage);
   }
 
 
