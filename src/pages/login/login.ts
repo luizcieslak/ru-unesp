@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, AlertController } from 'ionic-angular';
 
+import { Validators, FormBuilder, FormGroup } from '@angular/forms';
+import { EmailValidator } from '../../validators/email';
+
 import { HomePage } from '../home/home';
 import { SignupPage } from '../signup/signup';
 
@@ -16,15 +19,38 @@ import { SignupPage } from '../signup/signup';
 })
 export class LoginPage {
 
+  //A FormGroup is a collection of FormControls, which is inputed in html.
+  private loginForm: FormGroup;
+
+  //Boolean variable that stores if user tries to submit the form.
+  private submitAttempt: boolean;
+
+  //String variable that stores the server error in a failed signin.
+  private loginError: string;
+
   constructor(public navCtrl: NavController, public navParams: NavParams, 
-    public alertCtrl: AlertController) {}
+    public alertCtrl: AlertController, private formBuilder: FormBuilder) {
+
+      //Create FormBuilder with your inputs and their Validators.
+      this.loginForm = this.formBuilder.group({
+        email: ['', Validators.compose([ Validators.required, EmailValidator.isValid ]) ],
+        password: ['', Validators.required]
+      });
+
+    }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad LoginPage');
   }
 
   login(): void {
-    this.navCtrl.setRoot(HomePage);
+    this.submitAttempt = true;
+    if(this.loginForm.valid){
+      //form is valid, go to home page
+      this.navCtrl.setRoot(HomePage);
+    }else{
+      console.log("loginForm is not valid.");
+    }
   }
 
   recoverPass(): void{
