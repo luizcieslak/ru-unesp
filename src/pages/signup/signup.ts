@@ -8,6 +8,10 @@ import { matchingPasswords } from '../../validators/matching-passwords';
 
 import { LoginPage } from '../login/login';
 
+import { AuthService } from '../../providers/auth-service';
+import { UserService } from '../../providers/user-service';
+
+
 /*
   Generated class for the Signup page.
 
@@ -30,7 +34,8 @@ export class SignupPage {
   private signupError: string;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, 
-    private formBuilder: FormBuilder) {
+    private formBuilder: FormBuilder, private _auth: AuthService,
+    private _user: UserService) {
 
       //Create FormBuilder with your inputs and their Validators.
       this.signupForm = this.formBuilder.group({
@@ -47,11 +52,18 @@ export class SignupPage {
     console.log('ionViewDidLoad SignupPage');
   }
 
-  signup(): void{
+  signUp(): void{
     this.submitAttempt = true;
     if(this.signupForm.valid){
-      //form is valid, go to home page
-      this.navCtrl.push(LoginPage);
+      //create a user using AuthService
+      this._auth.signUp(this.signupForm.value.email, this.signupForm.value.password)
+        //then, store the additional info (name, RA) into the database
+        .then(() => this._user.postSignup(this._auth.uid,this.signupForm.value))
+        //if there is an error, display to the user.
+        .catch(error => this.signupError = error.message);
+
+      //go to login page after all.
+      //this.navCtrl.push(LoginPage);
     }else{
       console.log("signupForm is not valid.");
     }

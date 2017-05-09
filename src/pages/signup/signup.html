@@ -79,8 +79,10 @@
             </p>
         </form>
 
+        <p *ngIf="submitAttempt && signupError" style="color: #ea6153;">{{ signupError }}</p>
+
     </ion-list>
-    <button (click)="signup()" ion-button block>Criar</button>
+    <button (click)="signUp()" ion-button block>Criar</button>
 
 
 </ion-content>
