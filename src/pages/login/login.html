@@ -34,6 +34,9 @@
                 <ion-label floating>Password</ion-label>
                 <ion-input formControlName="password" type="password"></ion-input>
             </ion-item>
+            <p *ngIf="submitAttempt && loginForm.controls.password.hasError('required')" style="color: #ea6153;" padding>
+                Senha Obrigatória.
+            </p>
         </form>
 
         <p *ngIf="submitAttempt && loginError" style="color: #ea6153;">{{ loginError }}</p>
@@ -42,12 +45,10 @@
 
 
     <button (click)="login()" ion-button block>Login</button>
-    <button (click)="recoverPass()" ion-button clear>Esqueceu a senha?</button>
+    <button (click)="resetPass()" ion-button clear>Esqueceu a senha?</button>
     <br>
     <button (click)="signup()" ion-button clear>Criar uma conta</button>
     <br>
     <button (click)="help()" ion-button clear>Ajuda</button>
-
-
 
 </ion-content>
