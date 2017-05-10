@@ -62,12 +62,10 @@ export class LoginPage {
   }
 
   onLoginSuccess(): void{
-    
-    this.events.publish('login');
-
-    this.navCtrl.setRoot(HomePage);
+    this.events.publish('login'); //create an event called 'login'
+    this.navCtrl.setRoot(HomePage); //goes to home page.
   }
-
+  
   resetPass(): void{
     let prompt = this.alertCtrl.create({
         title: 'Esqueceu a senha?',

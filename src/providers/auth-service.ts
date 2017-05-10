@@ -20,10 +20,16 @@ export class AuthService {
     });
   }
 
+  /**
+   * @returns true if user is authenticated.
+   */
   get autenthicated(): boolean{
     return this.authState !== null;
   }
 
+  /**
+   * @returns user's uid.
+   */
   get uid(): string{
     return this.authState !== null? this.authState.auth.uid : null;
   }
@@ -35,6 +41,10 @@ export class AuthService {
   //   })
   // }
 
+  /**
+   * Sign in into Firebase using Email.
+   * @returns Firebase Promise.
+   */
   signInWithEmail(email: string, password: string): firebase.Promise<FirebaseAuthState>{
     return this.auth$.login({
       email: email,
@@ -48,15 +58,11 @@ export class AuthService {
   signOut(): void{
     this.auth$.logout();
   }
-
-  displayEmail(): string{
-    if(this.authState != null){
-      return this.authState.auth.email;
-    }else{
-      return null;
-    }
-  }
   
+  /**
+   * Sign up into Firebase using Email.
+   * @returns Firebase Promise.
+   */
   signUp(email: string, password: string): firebase.Promise<FirebaseAuthState>{
     return this.auth$.createUser({
       email: email,
@@ -64,6 +70,10 @@ export class AuthService {
     });
   }
 
+  /**
+   * Reset user's password using Firebase mail system.
+   * @returns Firebase Promise.
+   */
   resetPassword(email: string): firebase.Promise<FirebaseAuthState>{
     return firebase.auth().sendPasswordResetEmail(email);
   }

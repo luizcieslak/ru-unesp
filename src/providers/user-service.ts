@@ -16,6 +16,9 @@ export class UserService {
   constructor(public af: AngularFire, private _auth: AuthService ) {
   }
 
+  /**
+   * Function called after AuthService.signUp() to store user's additional info.
+   */
   postSignup(uid: string, data): any{
     this.user = this.af.database.object('users/'+uid);
     this.user.set(({

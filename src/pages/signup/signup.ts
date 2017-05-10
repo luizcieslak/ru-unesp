@@ -57,8 +57,8 @@ export class SignupPage {
     if(this.signupForm.valid){
       //create a user using AuthService
       this._auth.signUp(this.signupForm.value.email, this.signupForm.value.password)
-        //then, store the additional info (name, RA) into the database
-        .then(() => this._user.postSignup(this._auth.uid,this.signupForm.value))
+        //then, call onSignUpSuccess
+        .then(() => this.onSignUpSuccess() )
         //if there is an error, display to the user.
         .catch(error => this.signupError = error.message);
 
@@ -67,6 +67,11 @@ export class SignupPage {
     }else{
       console.log("signupForm is not valid.");
     }
+  }
+
+  onSignUpSuccess(): void{
+    this._user.postSignup(this._auth.uid,this.signupForm.value); //store the additional info (name, RA) into the database
+    this.navCtrl.push(LoginPage); //go to login page after all.
   }
 
 }

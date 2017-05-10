@@ -25,6 +25,7 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
+  //information in sidemenu header
   user: FirebaseObjectObservable<any>;
   name: string;
   saldo: Number;
@@ -34,7 +35,8 @@ export class MyApp {
     public af: AngularFire, public events: Events) {
     this.initializeApp();
     
-    this.events.subscribe('login',(() => { this.onLoginSuccess() }));
+    //listen for a 'login' event.
+    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //then, call onLoginSuccess()
 
     this.pages = [
       { title: 'Home', component: HomePage },
@@ -60,11 +62,11 @@ export class MyApp {
     this.nav.setRoot(page.component);
   }
 
-  onLoginSuccess(): void{
-    //get logged user
-    console.log("uid " + this._auth.uid);
+  onLoginSuccess(): void{ //get logged user
     this.user = this.af.database.object('/users/'+this._auth.uid);  
     
+    //for now we need to subscribe and store in different variables
+    //due to the problem that using {{ user?.name | async }} in app.html is not working
     this.user.subscribe( snapshot => {
       this.name = snapshot.name; //name is coming with double quotes
       this.saldo = snapshot.saldo;
