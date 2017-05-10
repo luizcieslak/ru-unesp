@@ -6,13 +6,83 @@
 -->
 <ion-header>
 
-  <ion-navbar>
-    <ion-title>signup</ion-title>
-  </ion-navbar>
+    <ion-navbar>
+        <ion-title>Crie uma conta</ion-title>
+    </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+
+    <ion-list>
+        <form [formGroup]="signupForm" novalidate>
+
+            <ion-item>
+                <ion-label floating>Nome</ion-label>
+                <ion-input type="text" formControlName="name"></ion-input>
+            </ion-item>
+
+            <p *ngIf="submitAttempt && signupForm.controls.name.hasError('required')" style="color: #ea6153;" padding>
+                Nome Obrigatório.
+            </p>
+
+            <ion-item>
+                <ion-label floating>RA</ion-label>
+                <ion-input type="text" formControlName="ra"></ion-input>
+            </ion-item>
+
+            <p *ngIf="submitAttempt && signupForm.controls.ra.hasError('required')" style="color: #ea6153;" padding>
+                RA Obrigatório.
+            </p>
+            <p *ngIf="submitAttempt && signupForm.controls.ra.hasError('invalidRA')" style="color: #ea6153;" padding>
+                RA Inválido.
+            </p>
+            <p *ngIf="submitAttempt && signupForm.controls.ra.hasError('maxlength')" style="color: #ea6153;" padding>
+                RA precisa conter no máximo 9 caracteres.
+            </p>
+            <p *ngIf="submitAttempt && signupForm.controls.ra.hasError('minlength')" style="color: #ea6153;" padding>
+                RA precisa conter no mínimo 8 caracteres.
+            </p>
+
+            <ion-item>
+                <ion-label floating>Email</ion-label>
+                <ion-input type="text" formControlName="email"></ion-input>
+            </ion-item>
+
+            <p *ngIf="submitAttempt && signupForm.controls.email.hasError('required')" style="color: #ea6153;" padding>
+                Email Obrigatório.
+            </p>
+            <p *ngIf="submitAttempt && signupForm.controls.email.hasError('invalidEmail')" style="color: #ea6153;" padding>
+                Email Inválido.
+            </p>
+
+            <ion-item>
+                <ion-label floating>Senha</ion-label>
+                <ion-input type="password" formControlName="password"></ion-input>
+            </ion-item>
+
+            <p *ngIf="submitAttempt && signupForm.controls.password.hasError('required')" style="color: #ea6153;" padding>
+                Senha Obrigatória.
+            </p>
+            <p *ngIf="submitAttempt && signupForm.controls.password.hasError('minlength')" style="color: #ea6153;" padding>
+                Senha precisa conter pelo menos 6 caracteres.
+            </p>
+
+            <ion-item>
+                <ion-label floating>Confirmar Senha</ion-label>
+                <ion-input type="password" formControlName="confirmPass"></ion-input>
+            </ion-item>
+
+            <p *ngIf="submitAttempt && signupForm.hasError('mismatchedPasswords')" style="color: #ea6153;" padding>
+                As senhas não correspondem.
+            </p>
+        </form>
+
+        <p *ngIf="submitAttempt && signupError" style="color: #ea6153;">{{ signupError }}</p>
+
+    </ion-list>
+    <button (click)="signUp()" ion-button block>Criar</button>
+
 
 </ion-content>

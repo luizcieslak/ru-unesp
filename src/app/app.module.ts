@@ -4,6 +4,7 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
 import { MyApp } from './app.component';
 
+//app pages
 import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
@@ -13,6 +14,15 @@ import { SignupPage } from '../pages/signup/signup';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+
+//firebase
+import { FirebaseConfig } from "../firebase-config";
+import { AngularFireModule } from 'angularfire2';
+
+//providers
+import { AuthService } from "../providers/auth-service";
+import { UserService } from "../providers/user-service";
+import { RefeicaoService } from "../providers/refeicao-service";
 
 @NgModule({
   declarations: [
@@ -27,6 +37,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
+    AngularFireModule.initializeApp(FirebaseConfig)
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -41,6 +52,9 @@ import { SplashScreen } from '@ionic-native/splash-screen';
   providers: [
     StatusBar,
     SplashScreen,
+    AuthService,
+    UserService,
+    RefeicaoService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

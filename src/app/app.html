@@ -7,6 +7,16 @@
 
   <ion-content>
     <ion-list>
+
+      <ion-list-header>
+        <ion-avatar item-left>
+          <img src="img/woody.png">
+        </ion-avatar>
+        <h2>{{ name | json }}</h2>
+        <h3>Saldo: {{ saldo | json }}</h3>
+        <a href="#">Ver Perfil</a>
+      </ion-list-header>
+
       <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">
         {{p.title}}
       </button>

@@ -33,3 +33,5 @@ img/
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate
+
+/src/firebase-config.ts
