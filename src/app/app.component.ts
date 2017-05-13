@@ -15,6 +15,9 @@ import { AuthService } from '../providers/auth-service';
 
 import { AngularFire, FirebaseObjectObservable } from 'angularfire2';
 
+//gravatar requires a MD5 hash of user's email address.
+import md5 from 'crypto-md5';
+
 @Component({
   templateUrl: 'app.html'
 })
@@ -29,6 +32,8 @@ export class MyApp {
   user: FirebaseObjectObservable<any>;
   name: string;
   saldo: Number;
+  profilePicture: any; //gravatar profile pic
+
 
   constructor(public platform: Platform, public statusBar: StatusBar, 
     public splashScreen: SplashScreen, private _auth: AuthService,
@@ -70,6 +75,8 @@ export class MyApp {
     this.user.subscribe( snapshot => {
       this.name = snapshot.name; //name is coming with double quotes
       this.saldo = snapshot.saldo;
+
+      this.profilePicture = "https://www.gravatar.com/avatar/" + md5(snapshot.email.toLowerCase(), 'hex');
     }, error => { console.log('Error',error) });
   }
 }

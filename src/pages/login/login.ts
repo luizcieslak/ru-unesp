@@ -42,7 +42,6 @@ export class LoginPage {
         email: ['', Validators.compose([ Validators.required, EmailValidator.isValid ]) ],
         password: ['', Validators.required]
       });
-
     }
 
   ionViewDidLoad() {
@@ -124,6 +123,12 @@ export class LoginPage {
 
   signup(): void{
     this.navCtrl.push(SignupPage);
+  }
+
+  fastLogin(): void{
+    this._auth.signInWithEmail("cieslakluiz@gmail.com","123456")
+      .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
+      .catch(error => { this.loginError = error.message }); //else, show the error.
   }
 
 

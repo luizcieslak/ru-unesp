@@ -10,7 +10,7 @@
 
       <ion-list-header>
         <ion-avatar item-left>
-          <img src="img/woody.png">
+          <img [src]="profilePicture">
         </ion-avatar>
         <h2>{{ name | json }}</h2>
         <h3>Saldo: {{ saldo | json }}</h3>
