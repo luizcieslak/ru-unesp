@@ -26,7 +26,7 @@ export class MyApp {
 
   rootPage: any = LoginPage; //Change this for setting the rootPage.
 
-  pages: Array<{title: string, component: any}>;
+  pages: Array<{title: string, component: any, icon: string}>;
 
   //information in sidemenu header
   user: FirebaseObjectObservable<any>;
@@ -44,10 +44,10 @@ export class MyApp {
     this.events.subscribe('login',(() => { this.onLoginSuccess() })); //then, call onLoginSuccess()
 
     this.pages = [
-      { title: 'Home', component: HomePage },
-      { title: 'Refeições', component: RefeicaoListPage },
-      { title: 'Transferência', component: TransferenciaPage },
-      { title: 'Ajuda', component: AjudaPage },
+      { title: 'Home', component: HomePage, icon: 'home' },
+      { title: 'Refeições', component: RefeicaoListPage, icon: 'restaurant' },
+      { title: 'Transferência', component: TransferenciaPage, icon: 'swap' },
+      { title: 'Ajuda', component: AjudaPage, icon: 'help' },
     ];
 
   }
@@ -78,5 +78,10 @@ export class MyApp {
 
       this.profilePicture = "https://www.gravatar.com/avatar/" + md5(snapshot.email.toLowerCase(), 'hex');
     }, error => { console.log('Error',error) });
+  }
+
+  signOut(): void{
+    this._auth.signOut();
+    this.nav.setRoot(LoginPage);
   }
 }

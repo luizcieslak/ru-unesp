@@ -8,17 +8,19 @@
   <ion-content>
     <ion-list>
 
-      <ion-list-header>
-        <ion-avatar item-left>
-          <img [src]="profilePicture">
-        </ion-avatar>
+      <ion-list-header text-center>
+        <img class="circle" [src]="profilePicture">
         <h2>{{ name }}</h2>
         <h3>Saldo: {{ saldo }}</h3>
-        <a href="#">Ver Perfil</a>
+        <button (click)="profilePage()" ion-button clear>Ver Perfil</button>
       </ion-list-header>
-
       <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">
+        <ion-icon [name]="p.icon" item-right small></ion-icon>
         {{p.title}}
+      </button>
+      <button menuClose ion-item (click)="signOut()">
+        <ion-icon name="log-out" item-right small></ion-icon>
+        Sair
       </button>
     </ion-list>
   </ion-content>
