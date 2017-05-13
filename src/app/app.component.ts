@@ -73,7 +73,7 @@ export class MyApp {
     //for now we need to subscribe and store in different variables
     //due to the problem that using {{ user?.name | async }} in app.html is not working
     this.user.subscribe( snapshot => {
-      this.name = snapshot.name; //name is coming with double quotes
+      this.name = snapshot.name;
       this.saldo = snapshot.saldo;
 
       this.profilePicture = "https://www.gravatar.com/avatar/" + md5(snapshot.email.toLowerCase(), 'hex');
