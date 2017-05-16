@@ -24,6 +24,9 @@ import { AuthService } from "../providers/auth-service";
 import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
 
+//using moment as pipe
+import { MomentPipe } from '../pipes/moment-pipe'
+
 @NgModule({
   declarations: [
     MyApp,
@@ -32,7 +35,8 @@ import { RefeicaoService } from "../providers/refeicao-service";
     RefeicaoListPage,
     TransferenciaPage,
     LoginPage,
-    SignupPage
+    SignupPage,
+    MomentPipe
   ],
   imports: [
     BrowserModule,
