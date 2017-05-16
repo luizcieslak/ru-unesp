@@ -16,4 +16,29 @@
 
 <ion-content padding>
 
+<ion-card *ngFor="let r of refeicoes | async">
+  <img src="img/ru.png"/>
+  <ion-card-content>
+    <ion-card-title>
+      {{r. timestamp | momentPipe: 'LL'}}
+      </ion-card-title>
+    <p>
+      {{r.base1}}, {{r.base2}}, {{r.principal}} e {{r.veg}} (opcao vegetariana).
+    </p>
+  </ion-card-content>
+  <ion-row>
+    <ion-col center text-center>
+      {{r.vagas}} vagas restantes
+    </ion-col>
+    <ion-col right>
+      <button ion-button icon-left clear small>
+        <ion-icon name="cart"></ion-icon>
+        <div>Reservar</div>
+      </button>
+    </ion-col>
+  </ion-row>
+</ion-card>
+
+
+
 </ion-content>
