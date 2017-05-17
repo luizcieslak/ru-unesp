@@ -8,6 +8,7 @@ import { MyApp } from './app.component';
 import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
+import { RefeicaoDetailPage } from '../pages/refeicao-detail/refeicao-detail';
 import { TransferenciaPage } from '../pages/transferencia/transferencia';
 import { LoginPage } from '../pages/login/login';
 import { SignupPage } from '../pages/signup/signup';
@@ -33,6 +34,7 @@ import { MomentPipe } from '../pipes/moment-pipe'
     AjudaPage,
     HomePage,
     RefeicaoListPage,
+    RefeicaoDetailPage,
     TransferenciaPage,
     LoginPage,
     SignupPage,
@@ -49,6 +51,7 @@ import { MomentPipe } from '../pipes/moment-pipe'
     AjudaPage,
     HomePage,
     RefeicaoListPage,
+    RefeicaoDetailPage,
     TransferenciaPage,
     LoginPage,
     SignupPage

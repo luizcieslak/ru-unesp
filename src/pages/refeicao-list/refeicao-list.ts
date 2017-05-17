@@ -5,6 +5,8 @@ import { AngularFire, FirebaseListObservable } from 'angularfire2';
 
 import { AuthService } from '../../providers/auth-service';
 
+import { RefeicaoDetailPage } from '../refeicao-detail/refeicao-detail';
+
 //moment.js library for handling timestamps
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
@@ -44,6 +46,12 @@ export class RefeicaoListPage {
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad RefeicaoListPage');
+  }
+
+  gotoDetails(refeicao):void {
+    this.navCtrl.push(RefeicaoDetailPage,{
+      refeicao: refeicao
+    })
   }
 
 }

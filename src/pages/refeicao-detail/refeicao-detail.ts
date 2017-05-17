@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 
+import { AngularFire, FirebaseObjectObservable } from 'angularfire2';
+
 /*
   Generated class for the RefeicaoDetail page.
 
@@ -13,7 +15,11 @@ import { NavController, NavParams } from 'ionic-angular';
 })
 export class RefeicaoDetailPage {
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {}
+  refeicao: FirebaseObjectObservable<any>; //refeicao sent via NavParams
+
+  constructor(public navCtrl: NavController, public navParams: NavParams) {
+    this.refeicao = this.navParams.get('refeicao');
+  }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad RefeicaoDetailPage');
