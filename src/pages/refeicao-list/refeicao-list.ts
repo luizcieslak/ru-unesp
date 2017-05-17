@@ -35,7 +35,11 @@ export class RefeicaoListPage {
       this.loading.present();
       
       //get the song array in a async operation.
-      this.refeicoes = af.database.list('/refeicoes');
+      this.refeicoes = af.database.list('/refeicoes',{
+        query:{
+          orderByChild: 'timestamp'
+        }
+      });
 
       //subscribe to end loading after data is loaded.
       this.refeicoes.subscribe( snapshot => {
