@@ -9,11 +9,21 @@
         <button ion-button menuToggle>
           <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>refeicao-detail</ion-title>
+        <ion-title>{{refeicao.timestamp | momentPipe: 'LL'}}</ion-title>
     </ion-navbar>
 </ion-header>
 
 
 <ion-content padding>
+
+  <h3><b>Prato Base: </b> {{refeicao.base1}} e {{refeicao.base2}}</h3>
+  <h3><b>Prato Principal: </b> {{refeicao.principal}}</h3>
+  <h3><b>Opcao vegetariana: </b> {{refeicao.veg}}</h3>
+  <h3><b>Guarnição: </b> {{refeicao.guarnicao}}</h3>
+  <h3><b>Saladas: </b> {{refeicao.salada1}} e {{refeicao.salada2}}</h3>
+  <h3><b>Sobremesa: </b> {{refeicao.sobremesa}} </h3>
+  <h3><b>Suco: </b> {{refeicao.suco}}</h3>
+
+  <button ion-button outline block>Reservar</button>
 
 </ion-content>

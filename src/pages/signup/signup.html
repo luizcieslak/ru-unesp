@@ -77,6 +77,11 @@
             <p *ngIf="submitAttempt && signupForm.hasError('mismatchedPasswords')" style="color: #ea6153;" padding>
                 As senhas não correspondem.
             </p>
+            <br><br>
+            <ion-item>
+                <ion-label>Vegetariano?</ion-label>
+                <ion-checkbox color="dark" formControlName="veg"></ion-checkbox>
+            </ion-item>
         </form>
 
         <p *ngIf="submitAttempt && signupError" style="color: #ea6153;">{{ signupError }}</p>
