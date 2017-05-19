@@ -3,6 +3,7 @@ import { NavController } from 'ionic-angular';
 
 //new imports
 import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
 @Component({
   selector: 'page-home',
@@ -16,19 +17,22 @@ export class HomePage {
   }
 
   //user from auth
+  auth: any;
   user: any;
-  currentUser: any;
 
-  constructor(public navCtrl: NavController, private afAuth: AngularFireAuth) {
+  constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
+  public afDB: AngularFireDatabase) {
 
-    afAuth.authState.subscribe(user => {
-        if (!user) {
-          this.user = null;        
+    afAuth.authState.subscribe(auth => {
+        if (!auth) {
+          this.auth = null;        
           return;
         }
-        this.user = user; 
-        this.currentUser = afAuth.auth.currentUser;     
-      });
+        this.auth = auth;    
+    });
+
+    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
+    
   }
 
 }

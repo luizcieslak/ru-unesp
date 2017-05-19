@@ -68,15 +68,7 @@ export class MyApp {
 
   onLoginSuccess(): void{ //get logged user
     this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
-    
-    //for now we need to subscribe and store in different variables
-    //due to the problem that using {{ user?.name | async }} in app.html is not working
-    this.user.subscribe( snapshot => {
-      this.name = snapshot.name;
-      this.saldo = snapshot.saldo;
-
-      this.profilePicture = "https://www.gravatar.com/avatar/" + md5(snapshot.email.toLowerCase(), 'hex');
-    }, error => { console.log('Error',error) });
+    this.profilePicture = "https://www.gravatar.com/avatar/" + md5(this.afAuth.auth.currentUser.email.toLowerCase(), 'hex');
   }
 
   signOut(): void{
