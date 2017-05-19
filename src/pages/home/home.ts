@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-import { AuthService } from '../../providers/auth-service';
+//new imports
+import { AngularFireAuth } from 'angularfire2/auth';
 
 @Component({
   selector: 'page-home',
@@ -11,11 +12,23 @@ export class HomePage {
 
   //event fired before page is loaded. Checks if the user is authenticated.
   ionViewCanEnter() {
-    return this._auth.autenthicated;
+    return this.afAuth.authState;
   }
 
-  constructor(public navCtrl: NavController, private _auth: AuthService) {
+  //user from auth
+  user: any;
+  currentUser: any;
 
+  constructor(public navCtrl: NavController, private afAuth: AngularFireAuth) {
+
+    afAuth.authState.subscribe(user => {
+        if (!user) {
+          this.user = null;        
+          return;
+        }
+        this.user = user; 
+        this.currentUser = afAuth.auth.currentUser;     
+      });
   }
 
 }

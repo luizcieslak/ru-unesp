@@ -19,6 +19,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 //firebase
 import { FirebaseConfig } from "../firebase-config";
 import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { AngularFireAuthModule } from 'angularfire2/auth'
 
 //providers
 import { AuthService } from "../providers/auth-service";
@@ -43,7 +45,9 @@ import { MomentPipe } from '../pipes/moment-pipe'
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
-    AngularFireModule.initializeApp(FirebaseConfig)
+    AngularFireModule.initializeApp(FirebaseConfig),
+    AngularFireDatabaseModule,
+    AngularFireAuthModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -59,9 +63,9 @@ import { MomentPipe } from '../pipes/moment-pipe'
   providers: [
     StatusBar,
     SplashScreen,
-    AuthService,
-    UserService,
     RefeicaoService,
+    UserService,
+    AuthService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

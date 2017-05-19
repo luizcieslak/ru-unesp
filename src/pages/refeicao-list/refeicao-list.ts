@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, LoadingController, Loading } from 'ionic-angular';
 
-import { AngularFire, FirebaseListObservable } from 'angularfire2';
-
-import { AuthService } from '../../providers/auth-service';
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
 import { RefeicaoDetailPage } from '../refeicao-detail/refeicao-detail';
 
@@ -27,15 +25,14 @@ export class RefeicaoListPage {
   loading: Loading;                   //loading component.
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
-    public loadingCtrl: LoadingController, public af: AngularFire,
-    private _auth: AuthService) {
+    public loadingCtrl: LoadingController, public afDB: AngularFireDatabase) {
 
       //create present the loading
       this.loading = this.loadingCtrl.create();
       this.loading.present();
       
       //get the song array in a async operation.
-      this.refeicoes = af.database.list('/refeicoes',{
+      this.refeicoes = afDB.list('/refeicoes',{
         query:{
           orderByChild: 'timestamp'
         }

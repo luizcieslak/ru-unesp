@@ -8,8 +8,9 @@ import { matchingPasswords } from '../../validators/matching-passwords';
 
 import { LoginPage } from '../login/login';
 
-import { AuthService } from '../../providers/auth-service';
-import { UserService } from '../../providers/user-service';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
 
 
 /*
@@ -34,8 +35,8 @@ export class SignupPage {
   private signupError: string;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, 
-    private formBuilder: FormBuilder, private _auth: AuthService,
-    private _user: UserService) {
+    private formBuilder: FormBuilder, private afAuth: AngularFireAuth,
+    public afDB: AngularFireDatabase) {
 
       //Create FormBuilder with your inputs and their Validators.
       this.signupForm = this.formBuilder.group({
@@ -57,7 +58,7 @@ export class SignupPage {
     this.submitAttempt = true;
     if(this.signupForm.valid){
       //create a user using AuthService
-      this._auth.signUp(this.signupForm.value.email, this.signupForm.value.password)
+      this.afAuth.auth.createUserWithEmailAndPassword(this.signupForm.value.email, this.signupForm.value.password)
         //then, call onSignUpSuccess
         .then(() => this.onSignUpSuccess() )
         //if there is an error, display to the user.
@@ -71,15 +72,33 @@ export class SignupPage {
   }
 
   onSignUpSuccess(): void{
-    this._user.postSignup(this._auth.uid,this.signupForm.value) //store the additional info (name, RA) into the database
+    this.postSignup(this.afAuth.auth.currentUser.uid,this.signupForm.value) //store the additional info (name, RA) into the database
       .then( () => this.onPostSignUpSuccess() )
       .catch( error => { console.log('error on postSignup(): '+error.message); });
     
   }
 
+  /**
+   * Function called after AuthService.signUp() to store user's additional info.
+   */
+  postSignup(uid: string, data): firebase.Promise<any>{
+    let user: FirebaseObjectObservable<any>;
+    user = this.afDB.object('users/'+uid);
+    return user.set(({
+      name: data.name,
+      ra: data.ra,
+      email: data.email,
+      saldo: 0,
+      refeicoes: {},
+      veg: data.veg,
+      created_at: firebase.database.ServerValue.TIMESTAMP,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    }));
+  }
+
   onPostSignUpSuccess(): void{
     console.log('onPostSignUpSuccess()');
-    this._auth.signOut();
+    this.afAuth.auth.signOut();
     this.navCtrl.push(LoginPage);
   }
 
