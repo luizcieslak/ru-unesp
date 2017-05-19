@@ -66,13 +66,21 @@ export class SignupPage {
       //go to login page after all.
       //this.navCtrl.push(LoginPage);
     }else{
-      console.log("signupForm is not valid.");
+      console.log('signupForm is not valid.');
     }
   }
 
   onSignUpSuccess(): void{
-    this._user.postSignup(this._auth.uid,this.signupForm.value); //store the additional info (name, RA) into the database
-    this.navCtrl.push(LoginPage); //go to login page after all.
+    this._user.postSignup(this._auth.uid,this.signupForm.value) //store the additional info (name, RA) into the database
+      .then( () => this.onPostSignUpSuccess() )
+      .catch( error => { console.log('error on postSignup(): '+error.message); });
+    
+  }
+
+  onPostSignUpSuccess(): void{
+    console.log('onPostSignUpSuccess()');
+    this._auth.signOut();
+    this.navCtrl.push(LoginPage);
   }
 
 }

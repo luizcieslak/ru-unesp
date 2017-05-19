@@ -19,9 +19,9 @@ export class UserService {
   /**
    * Function called after AuthService.signUp() to store user's additional info.
    */
-  postSignup(uid: string, data): any{
+  postSignup(uid: string, data): firebase.Promise<any>{
     this.user = this.af.database.object('users/'+uid);
-    this.user.set(({
+    return this.user.set(({
       name: data.name,
       ra: data.ra,
       email: data.email,
@@ -31,9 +31,6 @@ export class UserService {
       created_at: firebase.database.ServerValue.TIMESTAMP,
       updated_at: firebase.database.ServerValue.TIMESTAMP
     }));
-
-    //logout the user, because AngularFireAuth.createUser() logins the user automatically.
-    this._auth.signOut();
   }
 
 }

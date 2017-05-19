@@ -45,7 +45,7 @@ export class LoginPage {
     }
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad LoginPage');
+    console.log('LoginPage auth? '+ this._auth.autenthicated);
   }
 
   login(): void {
@@ -127,6 +127,12 @@ export class LoginPage {
 
   fastLogin(): void{
     this._auth.signInWithEmail("cieslakluiz@gmail.com","123456")
+      .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
+      .catch(error => { this.loginError = error.message }); //else, show the error.
+  }
+
+  vegLogin(): void{
+    this._auth.signInWithEmail("luiz_cieslak@hotmail.com","luizveg")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
