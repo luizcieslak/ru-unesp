@@ -7,9 +7,8 @@ import { EmailValidator } from '../../validators/email';
 import { HomePage } from '../home/home';
 import { SignupPage } from '../signup/signup';
 
-import { AuthService } from '../../providers/auth-service';
-
-
+//new imports
+import { AngularFireAuth } from 'angularfire2/auth';
 
 /*
   Generated class for the Login page.
@@ -31,11 +30,10 @@ export class LoginPage {
 
   //String variable that stores the server error in a failed signin.
   private loginError: string;
-
+  
   constructor(public navCtrl: NavController, public navParams: NavParams, 
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
-    private _auth: AuthService, public toastCtrl: ToastController,
-    public events: Events) {
+    public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
 
       //Create FormBuilder with your inputs and their Validators.
       this.loginForm = this.formBuilder.group({
@@ -45,16 +43,22 @@ export class LoginPage {
     }
 
   ionViewDidLoad() {
-    console.log('LoginPage auth? '+ this._auth.autenthicated);
+    console.log('LoginPage auth? '+ this.afAuth.authState);
   }
 
   login(): void {
     this.submitAttempt = true;
     if(this.loginForm.valid){
 
-      this._auth.signInWithEmail(this.loginForm.value.email,this.loginForm.value.password)
+      this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email,this.loginForm.value.password)
         .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
         .catch(error => { this.loginError = error.message }); //else, show the error.
+      // this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email,this.loginForm.value.password)
+      //   .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
+      //   .catch(error => { this.loginError = error.message }); //else, show the error.
+      
+
+        
     }else{
       console.log("loginForm is not valid.");
     }
@@ -85,7 +89,7 @@ export class LoginPage {
           {
             text: 'Enviar',
             handler: data => {
-              this._auth.resetPassword(data.email)
+              this.afAuth.auth.sendPasswordResetEmail(data.email)
                 .then(() => { this.onResetSuccess(data.email); })
                 .catch(error => { this.onResetFailure(error.message); });           
             }
@@ -126,13 +130,13 @@ export class LoginPage {
   }
 
   fastLogin(): void{
-    this._auth.signInWithEmail("cieslakluiz@gmail.com","123456")
+    this.afAuth.auth.signInWithEmailAndPassword("cieslakluiz@gmail.com","123456")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
 
   vegLogin(): void{
-    this._auth.signInWithEmail("luiz_cieslak@hotmail.com","luizveg")
+    this.afAuth.auth.signInWithEmailAndPassword("luiz_cieslak@hotmail.com","luizveg")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
