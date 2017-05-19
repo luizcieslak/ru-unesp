@@ -27,6 +27,7 @@ export class UserService {
       email: data.email,
       saldo: 0,
       refeicoes: {},
+      veg: data.veg,
       created_at: firebase.database.ServerValue.TIMESTAMP,
       updated_at: firebase.database.ServerValue.TIMESTAMP
     }));

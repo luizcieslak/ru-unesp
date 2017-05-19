@@ -43,7 +43,8 @@ export class SignupPage {
         name: ['', Validators.compose([Validators.required, Validators.maxLength(30)])],
         ra: ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(9), RaValidator.isValid,])],
         password: ['', Validators.compose([Validators.required, Validators.minLength(6)])],
-        confirmPass: ['', Validators.required]
+        confirmPass: ['', Validators.required],
+        veg: ['', Validators.required]
       },{validator: matchingPasswords('password','confirmPass')});
 
     }
