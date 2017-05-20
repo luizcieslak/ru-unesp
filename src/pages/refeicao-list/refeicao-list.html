@@ -16,11 +16,13 @@
 
 <ion-content padding>
 
+{{ user | async | json}}
+
 <ion-card *ngFor="let r of refeicoes | async">
   <img src="img/ru.png"/>
   <ion-card-content>
     <ion-card-title>
-      {{r. timestamp | momentPipe: 'LL'}}
+      {{r. timestamp | format: 'LL'}}
       </ion-card-title>
     <p>
       {{r.base1}}, {{r.base2}}, {{r.principal}} e {{r.veg}} (opcao vegetariana).
@@ -28,7 +30,10 @@
   </ion-card-content>
   <ion-row>
     <ion-col center text-center>
-      {{r.vagas}} vagas restantes
+      {{r.vagas}} vagas
+    </ion-col>
+    <ion-col>
+      acaba em {{r. timestamp | toNow }}
     </ion-col>
     <ion-col right>
       <button ion-button icon-left clear small (click)="gotoDetails(r)">

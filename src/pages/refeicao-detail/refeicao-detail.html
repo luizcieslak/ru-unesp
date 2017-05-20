@@ -9,7 +9,7 @@
         <button ion-button menuToggle>
           <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>{{refeicao.timestamp | momentPipe: 'LL'}}</ion-title>
+        <ion-title>{{refeicao.timestamp | format: 'LL'}}</ion-title>
     </ion-navbar>
 </ion-header>
 
@@ -24,6 +24,6 @@
   <h3><b>Sobremesa: </b> {{refeicao.sobremesa}} </h3>
   <h3><b>Suco: </b> {{refeicao.suco}}</h3>
 
-  <button ion-button outline block>Reservar</button>
+  <button ion-button (click)="book()" outline block>Reservar</button>
 
 </ion-content>

@@ -28,7 +28,8 @@ import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
 
 //using moment as pipe
-import { MomentPipe } from '../pipes/moment-pipe'
+import { FormatPipe } from '../pipes/format-pipe'
+import { ToNowPipe } from '../pipes/to-now-pipe'
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { MomentPipe } from '../pipes/moment-pipe'
     TransferenciaPage,
     LoginPage,
     SignupPage,
-    MomentPipe
+    FormatPipe,
+    ToNowPipe
   ],
   imports: [
     BrowserModule,
