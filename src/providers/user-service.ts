@@ -12,6 +12,8 @@ import { AuthService } from '../providers/auth-service';
 export class UserService {
 
   user: FirebaseObjectObservable<any>;
+  data: any;
+
 
   constructor(public afDB: AngularFireDatabase, private _auth: AuthService ) {
   }
@@ -31,6 +33,28 @@ export class UserService {
       created_at: firebase.database.ServerValue.TIMESTAMP,
       updated_at: firebase.database.ServerValue.TIMESTAMP
     }));
+  }
+
+  /**
+   * @returns true if user is set by setUser().
+   */
+  get active(): boolean{
+    return this.user !== null;
+  }
+
+  get saldo(): number{
+    return this.active? this.data.saldo : null;
+  }
+
+  get veg(): boolean{
+    return this.active? this.data.veg : null;
+  }
+
+  setUser(uid: string){
+    this.user = this.afDB.object('users/'+uid);
+    this.user.subscribe( snapshot => {
+        this.data = snapshot;
+    })
   }
 
 }

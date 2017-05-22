@@ -13,7 +13,7 @@ export class HomePage {
 
   //event fired before page is loaded. Checks if the user is authenticated.
   ionViewCanEnter() {
-    return this.afAuth.authState;
+    return this.auth !== null;
   }
 
   //user from auth
@@ -30,7 +30,7 @@ export class HomePage {
         }
         this.auth = auth;    
     });
-
+    
     this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
     
   }

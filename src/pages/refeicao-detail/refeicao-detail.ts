@@ -51,32 +51,21 @@ export class RefeicaoDetailPage {
   }
 
   book(): void{
-    //first, add to users/ data
-    let user = this.afDB.object('/users/'+ this.afAuth.auth.currentUser.uid);
-    let saldoPromise = firebase.database().ref('/users/'+ this.afAuth.auth.currentUser.uid+ '/saldo')
-      .transaction( saldo => { return saldo - 1; });
-
-    saldoPromise
-      .then( () => { 
-        this.addUser();
-        if(this.isVeg){
-          this.countPromise = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg_count')
-          .transaction( count => { return count + 1; });
-        }else{
-          this.countPromise = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/users_count')
-          .transaction( count => { return count + 1; });
-        }
-        this.countPromise
-          .then( () => {
-            let vagasPromise = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/vagas')
-              .transaction( vagas => { return vagas - 1; });
-            vagasPromise
-              .then( () => { this.addUser(); })
-              .catch( error => { console.log('Error in vagasPromise' +  error.message); })
-          })
-          .catch( error => { console.log('Error in countPromise' +  error.message); })
-      })
-      .catch( error => { console.log('Error in saldoPromise' +  error.message); })
+    
+      this.saldo()
+        .then(_ => {
+          this.count()
+            .then( _ => {
+              this.vagas()
+                .then( _ => {
+                  this.addUser()
+                })
+                .catch(error => { console.log('Error in vagas() ' +  error.message); });
+            })
+            .catch(error => { console.log('Error in count() ' +  error.message); });
+        })
+        .catch(error => { console.log('Error in saldo() ' +  error.message); });
+        
   }
 
   addUser(): void{
@@ -87,6 +76,26 @@ export class RefeicaoDetailPage {
       this.userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/users');
     }
     this.userList.child(this.afAuth.auth.currentUser.uid).set(true);
+  }
+
+  saldo(): firebase.Promise<any> {
+    return firebase.database().ref('/users/'+ this.afAuth.auth.currentUser.uid+ '/saldo')
+      .transaction( saldo => { return saldo - 1; });
+  }
+
+  count(): firebase.Promise<any>{
+    if(this.isVeg){
+      return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg_count')
+          .transaction( count => { return count + 1; });
+    }else{
+      return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/users_count')
+          .transaction( count => { return count + 1; });
+    }
+  }
+
+  vagas(): firebase.Promise<any>{
+    return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/vagas')
+              .transaction( vagas => { return vagas - 1; });
   }
 
 }
