@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams, AlertController, LoadingController, Loading } from 'ionic-angular';
 
-import { AngularFireDatabase, FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 
 //moment.js library for handling timestamps
@@ -23,21 +23,39 @@ import * as firebase from 'firebase/app';
 })
 export class RefeicaoDetailPage {
 
+  loading: Loading; //loading component.
+
   refeicao: any; //refeicao sent via NavParams
   timeLeft: string; //time left until the end of reservation.
-  userInfo: FirebaseObjectObservable<any>;
-  userList: any;
-  countPromise: firebase.Promise<any>;
+  vagasCount: Number; 
+
+  userObservable: FirebaseObjectObservable<any>;
+  userRefeicoes: any;
+  userSaldo: Number; //O saldo é obtido somente quando a página é carregada
   isVeg: boolean;
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
-    private afAuth: AngularFireAuth, public afDB:AngularFireDatabase) {
+    private afAuth: AngularFireAuth, public afDB:AngularFireDatabase,
+    public alertCtrl: AlertController, public loadingCtrl: LoadingController) {
+
+    //create and present the loading
+    this.loading = this.loadingCtrl.create();
+    this.loading.present();
+
     this.refeicao = this.navParams.get('refeicao');
 
-    this.userInfo = this.afDB.object('users/'+ afAuth.auth.currentUser.uid);
+    this.userObservable = this.afDB.object('users/'+ afAuth.auth.currentUser.uid);
 
-    this.userInfo.subscribe( user => {
+    this.userObservable.subscribe( user => {
       this.isVeg = user.veg
+      this.userSaldo = user.saldo;
+
+      //dar um 'bind' no numero de vagas com o banco de dados
+      let refeicaoObservable = this.afDB.object('/refeicoes/'+ this.refeicao.$key);
+      refeicaoObservable.subscribe( refeicao => {
+        this.vagasCount = refeicao.vagas;
+        this.loading.dismiss();
+      });
     });
     
 
@@ -52,38 +70,79 @@ export class RefeicaoDetailPage {
 
   book(): void{
     
-      this.saldo()
+    let bought: boolean;
+    this.userRefeicoes = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes');
+    //verificar se o usuario ja comprou essa refeição
+    this.userRefeicoes.child(this.refeicao.$key).once('value', snapshot => {
+      bought = snapshot.val() !== null;
+    })
+
+    if(this.userSaldo > 0 && this.vagasCount > 0 && !bought){
+      this.saldoPromise()
         .then(_ => {
-          this.count()
-            .then( _ => {
-              this.vagas()
-                .then( _ => {
-                  this.addUser()
-                })
-                .catch(error => { console.log('Error in vagas() ' +  error.message); });
-            })
-            .catch(error => { console.log('Error in count() ' +  error.message); });
-        })
-        .catch(error => { console.log('Error in saldo() ' +  error.message); });
+          this.countPromise()
+              .then( _ => {
+                this.vagasPromise()
+                  .then( _ => {
+                    this.addRefeicaoToUser()
+                      .then( _ => {
+                        this.addUser()
+                      })
+                      .catch(error => { console.log('Error in addRefeicaoToUser() ' +  error.message); })
+                  })
+                  .catch(error => { console.log('Error in vagas() ' +  error.message); });
+              })
+              .catch(error => { console.log('Error in count() ' +  error.message); });
+          })
+          .catch(error => { console.log('Error in saldo() ' +  error.message); });
+    }else{
+      let alert;
+      if(this.userSaldo == 0){ //AlertController para a falta de saldo
+        alert = this.alertCtrl.create({
+          title: 'Sem saldo',
+          subTitle: 'Seu saldo não é suficiente para comprar a refeição.',
+          buttons: ['OK']
+        });
+      }else if(bought){ //AlertController já comprou
+        alert = this.alertCtrl.create({
+          title: 'Já comprou',
+          subTitle: 'Você já comprou essa refeição.',
+          buttons: ['OK']
+        });
+      }else{
+        alert = this.alertCtrl.create({ //AlertController para o sem numero de vagas
+          title: 'Sem vagas',
+          subTitle: 'Não há mais vagas para essa refeição.',
+          buttons: ['OK']
+        });
+      }
+      alert.present();
+    }
         
   }
 
   addUser(): void{
     console.log('addUser()');
+    let userList;
     if(this.isVeg){
-      this.userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg');
+      userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg');
     }else{
-      this.userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/users');
+      userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/users');
     }
-    this.userList.child(this.afAuth.auth.currentUser.uid).set(true);
+
+    //verificar se o usuario ja esta na lista
+    userList.child(this.afAuth.auth.currentUser.uid).once('value', snapshot => {
+      if( snapshot.val() == null ) userList.child(this.afAuth.auth.currentUser.uid).set(true); //nao esta na lista
+    })
+    // userList.child(this.afAuth.auth.currentUser.uid).set(true);
   }
 
-  saldo(): firebase.Promise<any> {
+  saldoPromise(): firebase.Promise<any> {
     return firebase.database().ref('/users/'+ this.afAuth.auth.currentUser.uid+ '/saldo')
       .transaction( saldo => { return saldo - 1; });
   }
 
-  count(): firebase.Promise<any>{
+  countPromise(): firebase.Promise<any>{
     if(this.isVeg){
       return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg_count')
           .transaction( count => { return count + 1; });
@@ -93,9 +152,17 @@ export class RefeicaoDetailPage {
     }
   }
 
-  vagas(): firebase.Promise<any>{
+  vagasPromise(): firebase.Promise<any>{ 
+    //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
     return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/vagas')
-              .transaction( vagas => { return vagas - 1; });
+              .transaction( vagas => {
+                if(vagas>0) return vagas - 1;
+                else return vagas;
+              });
+  }
+
+  addRefeicaoToUser(): firebase.Promise<any> {
+    return this.userRefeicoes.child(this.refeicao.$key).set(true); //nao esta na lista
   }
 
 }
