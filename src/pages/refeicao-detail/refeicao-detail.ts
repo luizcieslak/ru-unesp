@@ -57,11 +57,6 @@ export class RefeicaoDetailPage {
         this.loading.dismiss();
       });
     });
-    
-
-    //moment tests
-    this.timeLeft = moment(this.refeicao.timestamp).fromNow();
-    console.log(moment().to(moment('20170518T1950'))); //comparing time
   }
 
   ionViewDidLoad() {
@@ -77,7 +72,7 @@ export class RefeicaoDetailPage {
       bought = snapshot.val() !== null;
     })
 
-    if(this.userSaldo > 0 && this.vagasCount > 0 && !bought){
+    if(this.userSaldo > 0 && this.vagasCount > 0 && !bought && this.isTimeOver()){
       this.saldoPromise()
         .then(_ => {
           this.countPromise()
@@ -163,6 +158,13 @@ export class RefeicaoDetailPage {
 
   addRefeicaoToUser(): firebase.Promise<any> {
     return this.userRefeicoes.child(this.refeicao.$key).set(true); //nao esta na lista
+  }
+
+  isTimeOver(): boolean{
+    console.log('now: '+ moment().format('LL'));
+    console.log('timestamp: '+ moment(this.refeicao.timestamp).format('LL'));
+    console.log('isBefore(): '+ moment().isBefore(this.refeicao.timestamp));
+    return moment().isBefore(this.refeicao.timestamp);
   }
 
 }
