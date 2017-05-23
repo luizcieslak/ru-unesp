@@ -24,6 +24,6 @@
   <h3><b>Sobremesa: </b> {{refeicao.sobremesa}} </h3>
   <h3><b>Suco: </b> {{refeicao.suco}}</h3>
 
-  <button ion-button (click)="book()" outline block>Reservar</button>
+  <button ion-button (click)="book()" block [color]="this.isEligible? '' : 'danger'" [disabled]="!isEligible">{{ buttonMsg }}</button>
 
 </ion-content>

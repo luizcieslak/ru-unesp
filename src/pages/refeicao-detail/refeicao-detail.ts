@@ -23,6 +23,8 @@ import * as firebase from 'firebase/app';
 })
 export class RefeicaoDetailPage {
 
+  buttonMsg = 'Reservar';
+
   loading: Loading; //loading component.
 
   refeicao: any; //refeicao sent via NavParams
@@ -55,6 +57,12 @@ export class RefeicaoDetailPage {
       refeicaoObservable.subscribe( refeicao => {
         this.vagasCount = refeicao.vagas;
         this.loading.dismiss();
+
+        //após tudo carregado, mostrar a mensagem no botão
+        if(this.vagasCount == 0) this.buttonMsg = 'Sem vagas!';
+        else if(this.isTimeOver()) this.buttonMsg = 'Tempo esgotado!';
+        else if(this.userSaldo == 0) this.buttonMsg = 'Sem saldo!';
+        else if(this.bought) this.buttonMsg = 'Já comprou!';
       });
     });
   }
@@ -63,16 +71,13 @@ export class RefeicaoDetailPage {
     console.log('ionViewDidLoad RefeicaoDetailPage');
   }
 
-  book(): void{
-    
-    let bought: boolean;
-    this.userRefeicoes = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes');
-    //verificar se o usuario ja comprou essa refeição
-    this.userRefeicoes.child(this.refeicao.$key).once('value', snapshot => {
-      bought = snapshot.val() !== null;
-    })
+  get isEligible(): boolean{ //verifica se o usuário pode realizar a compra.
+    return this.userSaldo > 0 && this.vagasCount > 0 && !this.bought && this.isTimeOver();
+  }
 
-    if(this.userSaldo > 0 && this.vagasCount > 0 && !bought && this.isTimeOver()){
+  book(): void{
+
+    if(this.isEligible){
       this.saldoPromise()
         .then(_ => {
           this.countPromise()
@@ -98,7 +103,7 @@ export class RefeicaoDetailPage {
           subTitle: 'Seu saldo não é suficiente para comprar a refeição.',
           buttons: ['OK']
         });
-      }else if(bought){ //AlertController já comprou
+      }else if(this.bought){ //AlertController já comprou
         alert = this.alertCtrl.create({
           title: 'Já comprou',
           subTitle: 'Você já comprou essa refeição.',
@@ -117,7 +122,6 @@ export class RefeicaoDetailPage {
   }
 
   addUser(): void{
-    console.log('addUser()');
     let userList;
     if(this.isVeg){
       userList = firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg');
@@ -129,6 +133,7 @@ export class RefeicaoDetailPage {
     userList.child(this.afAuth.auth.currentUser.uid).once('value', snapshot => {
       if( snapshot.val() == null ) userList.child(this.afAuth.auth.currentUser.uid).set(true); //nao esta na lista
     })
+    console.log('Compra realizada com sucesso');
     // userList.child(this.afAuth.auth.currentUser.uid).set(true);
   }
 
@@ -165,6 +170,16 @@ export class RefeicaoDetailPage {
     console.log('timestamp: '+ moment(this.refeicao.timestamp).format('LL'));
     console.log('isBefore(): '+ moment().isBefore(this.refeicao.timestamp));
     return moment().isBefore(this.refeicao.timestamp);
+  }
+
+  get bought(): boolean{
+    let bought: boolean;
+    this.userRefeicoes = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes');
+    //verificar se o usuario ja comprou essa refeição
+    this.userRefeicoes.child(this.refeicao.$key).once('value', snapshot => {
+      bought = snapshot.val() !== null;
+    })
+    return bought;
   }
 
 }
