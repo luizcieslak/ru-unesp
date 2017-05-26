@@ -81,12 +81,34 @@ export class RefeicaoDetailPage {
     return this.eligible;
   }
 
+  /**
+   * Função pré book() que pergunta se o usuário confirma a reserva.
+   */
+  confirmBook(): void{
+    let confirm = this.alertCtrl.create({
+      title: 'Confirmar Reserva',
+      message: 'Tem certeza que deseja reservar esta refeição? Seu saldo será debitado.',
+      buttons: [
+        {
+          text: 'Cancelar',
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            this.book();
+          }
+        }
+      ]
+    });
+    confirm.present();
+  }
+
 
   /**
    * Realizar a compra da refeição.
    */
   book(): void{
-
+    
     if(this.isEligible()){              //se o usuário for legível,
       this.saldoPromise()               //é feito uma cadeia de firebase.Promise<any>
         .then(_ => {                    //que realizam todas as operações necessárias.
