@@ -28,12 +28,9 @@
   </ion-card-content>
   <ion-row>
     <ion-col center text-center>
-      {{r.vagas}} vagas
+      {{r.vagas}} vagas. Reserva acaba em {{r. timestamp | fromNow }}
     </ion-col>
     <ion-col>
-      acaba em {{r. timestamp | fromNow }}
-    </ion-col>
-    <ion-col right>
       <button ion-button icon-left clear small (click)="gotoDetails(r)">
         <ion-icon name="cart"></ion-icon>
         <div>Reservar</div>
