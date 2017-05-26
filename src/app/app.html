@@ -10,7 +10,7 @@
 
       <ion-list-header text-center>
         <img class="circle" [src]="profilePicture">
-        <h2>{{ (user | async)?.name }} </h2>
+        <h2 text-wrap>{{ (user | async)?.name  | titleCase }} </h2>
         <h3>Saldo: {{ (user | async)?.saldo }}</h3>
         <button (click)="profilePage()" ion-button clear>Ver Perfil</button>
       </ion-list-header>

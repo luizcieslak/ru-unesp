@@ -28,8 +28,9 @@ import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
 
 //using moment as pipe
-import { FormatPipe } from '../pipes/format-pipe'
-import { FromNowPipe } from '../pipes/from-now-pipe'
+import { FormatPipe } from '../pipes/format-pipe';
+import { FromNowPipe } from '../pipes/from-now-pipe';
+import { TitleCasePipe } from '../pipes/title-case-pipe';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { FromNowPipe } from '../pipes/from-now-pipe'
     LoginPage,
     SignupPage,
     FormatPipe,
+    TitleCasePipe,
     FromNowPipe
   ],
   imports: [
