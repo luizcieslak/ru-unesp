@@ -1,16 +1,16 @@
 import { Injectable, Pipe } from '@angular/core';
 import * as moment from 'moment';
 
-// Pipe que utiliza a função toNow() do momentjs para timestamps.
+// Pipe que utiliza a função fromNow() do momentjs para timestamps.
 
 @Pipe({
-  name: 'toNow'
+  name: 'fromNow'
 })
 
 @Injectable()
-export class ToNowPipe {
+export class FromNowPipe {
   transform(value: Date|moment.Moment): any {
-        return moment(value).toNow();
+        return moment(value).fromNow();
     }
 }
 

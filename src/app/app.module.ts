@@ -29,7 +29,7 @@ import { RefeicaoService } from "../providers/refeicao-service";
 
 //using moment as pipe
 import { FormatPipe } from '../pipes/format-pipe'
-import { ToNowPipe } from '../pipes/to-now-pipe'
+import { FromNowPipe } from '../pipes/from-now-pipe'
 
 @NgModule({
   declarations: [
@@ -42,7 +42,7 @@ import { ToNowPipe } from '../pipes/to-now-pipe'
     LoginPage,
     SignupPage,
     FormatPipe,
-    ToNowPipe
+    FromNowPipe
   ],
   imports: [
     BrowserModule,
