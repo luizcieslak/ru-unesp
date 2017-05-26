@@ -11,12 +11,8 @@ import 'moment/locale/pt-br';
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
 
-/*
-  Generated class for the RefeicaoDetail page.
+import { HomePage } from '../home/home';
 
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   selector: 'page-refeicao-detail',
   templateUrl: 'refeicao-detail.html'
@@ -32,9 +28,10 @@ export class RefeicaoDetailPage {
   vagasCount: Number; 
 
   userObservable: FirebaseObjectObservable<any>;
-  userRefeicoes: any;
   userSaldo: Number; //O saldo é obtido somente quando a página é carregada
   isVeg: boolean;
+
+  eligible: boolean;
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     private afAuth: AngularFireAuth, public afDB:AngularFireDatabase,
@@ -43,9 +40,9 @@ export class RefeicaoDetailPage {
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
+    
 
     this.refeicao = this.navParams.get('refeicao');
-
     this.userObservable = this.afDB.object('users/'+ afAuth.auth.currentUser.uid);
 
     this.userObservable.subscribe( user => {
@@ -56,14 +53,17 @@ export class RefeicaoDetailPage {
       let refeicaoObservable = this.afDB.object('/refeicoes/'+ this.refeicao.$key);
       refeicaoObservable.subscribe( refeicao => {
         this.vagasCount = refeicao.vagas;
-        this.loading.dismiss();
 
         //após tudo carregado, mostrar a mensagem no botão
         if(this.vagasCount == 0) this.buttonMsg = 'Sem vagas!';
         else if(this.isTimeOver()) this.buttonMsg = 'Tempo esgotado!';
         else if(this.userSaldo == 0) this.buttonMsg = 'Sem saldo!';
-        else if(this.bought) this.buttonMsg = 'Já comprou!';
+        else if(this.bought()) this.buttonMsg = 'Já comprou!';
+        this.isEligible(); //faz o update na variável this.eligible
+        
+        this.loading.dismiss();
       });
+
     });
   }
 
@@ -71,13 +71,14 @@ export class RefeicaoDetailPage {
     console.log('ionViewDidLoad RefeicaoDetailPage');
   }
 
-  get isEligible(): boolean{ //verifica se o usuário pode realizar a compra.
-    return this.userSaldo > 0 && this.vagasCount > 0 && !this.bought && this.isTimeOver();
+  isEligible(): boolean{ //verifica se o usuário pode realizar a compra.
+    this.eligible = this.userSaldo > 0 && this.vagasCount > 0 && !this.bought() && !this.isTimeOver();
+    return this.eligible;
   }
 
   book(): void{
 
-    if(this.isEligible){
+    if(this.isEligible()){
       this.saldoPromise()
         .then(_ => {
           this.countPromise()
@@ -130,11 +131,22 @@ export class RefeicaoDetailPage {
     }
 
     //verificar se o usuario ja esta na lista
-    userList.child(this.afAuth.auth.currentUser.uid).once('value', snapshot => {
-      if( snapshot.val() == null ) userList.child(this.afAuth.auth.currentUser.uid).set(true); //nao esta na lista
-    })
-    console.log('Compra realizada com sucesso');
-    // userList.child(this.afAuth.auth.currentUser.uid).set(true);
+    //userList.child(this.afAuth.auth.currentUser.uid).once('value', snapshot => {
+    //  if( snapshot.val() == null ) userList.child(this.afAuth.auth.currentUser.uid).set(true); //nao esta na lista
+    //})
+    userList.child(this.afAuth.auth.currentUser.uid).set(true);
+    let alert = this.alertCtrl.create({ //AlertController para o sem numero de vagas
+          title: 'Sucesso',
+          subTitle: 'Compra realizada com sucesso!',
+          buttons: [{ 
+            text: 'OK',
+            handler: _ => {
+              this.navCtrl.setRoot(HomePage);
+            }
+          }]
+    });
+    alert.present();
+
   }
 
   saldoPromise(): firebase.Promise<any> {
@@ -162,21 +174,19 @@ export class RefeicaoDetailPage {
   }
 
   addRefeicaoToUser(): firebase.Promise<any> {
-    return this.userRefeicoes.child(this.refeicao.$key).set(true); //nao esta na lista
+    return firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes')
+      .child(this.refeicao.$key).set(true); //nao esta na lista
   }
 
   isTimeOver(): boolean{
-    console.log('now: '+ moment().format('LL'));
-    console.log('timestamp: '+ moment(this.refeicao.timestamp).format('LL'));
-    console.log('isBefore(): '+ moment().isBefore(this.refeicao.timestamp));
-    return moment().isBefore(this.refeicao.timestamp);
+   return moment().isAfter(this.refeicao.timestamp); //verificar data maxima de compra
   }
 
-  get bought(): boolean{
+  bought(): boolean {
     let bought: boolean;
-    this.userRefeicoes = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes');
     //verificar se o usuario ja comprou essa refeição
-    this.userRefeicoes.child(this.refeicao.$key).once('value', snapshot => {
+    let userRefeicoes = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes');
+    userRefeicoes.child(this.refeicao.$key).once('value', snapshot => {
       bought = snapshot.val() !== null;
     })
     return bought;
