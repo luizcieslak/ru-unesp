@@ -10,12 +10,6 @@ import { SignupPage } from '../signup/signup';
 //new imports
 import { AngularFireAuth } from 'angularfire2/auth';
 
-/*
-  Generated class for the Login page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html'
@@ -40,35 +34,41 @@ export class LoginPage {
         email: ['', Validators.compose([ Validators.required, EmailValidator.isValid ]) ],
         password: ['', Validators.required]
       });
-    }
 
-  ionViewDidLoad() {
-    console.log('LoginPage auth? '+ this.afAuth.authState);
+      //TODO: Persistir login do usuário
   }
 
+  ionViewDidLoad() {
+    console.log('ionViewDidLoad Login');
+  }
+
+  /**
+   * Fazer o login do usuário se o formulário for válido.
+   */
   login(): void {
     this.submitAttempt = true;
     if(this.loginForm.valid){
 
       this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email,this.loginForm.value.password)
-        .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
-        .catch(error => { this.loginError = error.message }); //else, show the error.
-      // this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email,this.loginForm.value.password)
-      //   .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
-      //   .catch(error => { this.loginError = error.message }); //else, show the error.
-      
+        .then(() => this.onLoginSuccess())  //  Se o login deu certo, executar onLoginSuccess
+        .catch(error => { this.loginError = error.message }); //se não, mostre o erro. 
 
-        
     }else{
       console.log("loginForm is not valid.");
     }
   }
-
-  onLoginSuccess(): void{
-    this.events.publish('login'); //create an event called 'login'
-    this.navCtrl.setRoot(HomePage); //goes to home page.
-  }
   
+  /**
+   * Executa as funções após o login.
+   */
+  onLoginSuccess(): void{
+    this.events.publish('login'); //Criar um evento chamado 'login' para o sidemenu.
+    this.navCtrl.setRoot(HomePage); //Ir para HomePage.
+  }
+
+  /**
+   * Envia um email para resetar a senha do usuário.
+   */
   resetPass(): void{
     let prompt = this.alertCtrl.create({
         title: 'Esqueceu a senha?',
@@ -99,6 +99,9 @@ export class LoginPage {
     prompt.present();
   }
 
+  /**
+   * Mostra um Toast caso a resetPass() tenha sido sucedida.
+   */
   onResetSuccess(email: string): void{
     let toast = this.toastCtrl.create({
       message: 'Email enviado para ' + email,
@@ -107,6 +110,9 @@ export class LoginPage {
     toast.present();
   }
 
+  /**
+   * Mostra um Toast caso a resetPass() tenha falhado.
+   */
   onResetFailure(error: string){
     let toast = this.toastCtrl.create({
       message: error,
@@ -115,7 +121,9 @@ export class LoginPage {
     toast.present();
   }
 
-
+  /**
+   * Alert que mostra ajuda antes do login.
+   */
   help(): void{
     let help = this.alertCtrl.create({
       title: 'Ajuda',
@@ -125,6 +133,9 @@ export class LoginPage {
     help.present();
   }
 
+  /**
+   * Vai para a página de signup
+   */
   signup(): void{
     this.navCtrl.push(SignupPage);
   }

@@ -9,12 +9,6 @@ import { RefeicaoDetailPage } from '../refeicao-detail/refeicao-detail';
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
 
-/*
-  Generated class for the RefeicaoList page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   selector: 'page-refeicao-list',
   templateUrl: 'refeicao-list.html'
@@ -22,7 +16,7 @@ import 'moment/locale/pt-br';
 export class RefeicaoListPage {
 
   refeicoes: FirebaseListObservable<any>; //refeicoes array.
-  loading: Loading;                   //loading component.
+  loading: Loading;                       //loading component.
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public loadingCtrl: LoadingController, public afDB: AngularFireDatabase) {
@@ -31,14 +25,14 @@ export class RefeicaoListPage {
       this.loading = this.loadingCtrl.create();
       this.loading.present();
       
-      //get the song array in a async operation.
+      //Pegar a lista de refeições de maneira assíncrona
       this.refeicoes = afDB.list('/refeicoes',{
         query:{
           orderByChild: 'timestamp'
         }
       });
 
-      //subscribe to end loading after data is loaded.
+      //Assim que os dados forem carregados, fechgar o loading component.
       this.refeicoes.subscribe( snapshot => {
         this.loading.dismiss();
       });
@@ -49,7 +43,11 @@ export class RefeicaoListPage {
     console.log('ionViewDidLoad RefeicaoListPage');
   }
 
-  gotoDetails(refeicao):void {
+  /**
+   * Ir para a refeicao-detail page com a refeição escolhida.
+   * @param {any} refeicao A refeição escolhida
+   */
+  gotoDetails(refeicao: any): void {
     this.navCtrl.push(RefeicaoDetailPage,{
       refeicao: refeicao
     })

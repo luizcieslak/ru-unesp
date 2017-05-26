@@ -24,12 +24,12 @@ export class RefeicaoDetailPage {
   loading: Loading; //loading component.
 
   refeicao: any; //refeicao sent via NavParams
-  timeLeft: string; //time left until the end of reservation.
-  vagasCount: Number; 
+  vagasCount: Number; //número de vagas da refeição
 
+  //variáveis do usuário
   userObservable: FirebaseObjectObservable<any>;
-  userSaldo: Number; //O saldo é obtido somente quando a página é carregada
-  isVeg: boolean;
+  userSaldo: Number;
+  isVeg: boolean; 
 
   eligible: boolean;
 
@@ -45,11 +45,12 @@ export class RefeicaoDetailPage {
     this.refeicao = this.navParams.get('refeicao');
     this.userObservable = this.afDB.object('users/'+ afAuth.auth.currentUser.uid);
 
-    this.userObservable.subscribe( user => {
+    this.userObservable.subscribe( user => { 
+      //Carregar as informações do usuário.
       this.isVeg = user.veg
       this.userSaldo = user.saldo;
 
-      //dar um 'bind' no numero de vagas com o banco de dados
+      //Carregar a informação do número de vagas.
       let refeicaoObservable = this.afDB.object('/refeicoes/'+ this.refeicao.$key);
       refeicaoObservable.subscribe( refeicao => {
         this.vagasCount = refeicao.vagas;
@@ -71,16 +72,24 @@ export class RefeicaoDetailPage {
     console.log('ionViewDidLoad RefeicaoDetailPage');
   }
 
-  isEligible(): boolean{ //verifica se o usuário pode realizar a compra.
+  /**
+   * Verifica se o usuário pode realizar a compra.
+   * @returns {true} se o usuário ter saldo suficiente, ainda ter vaga, usuário não ter comprado essa refeicao e não ter esgotado o tempo máximo de compra.
+  */
+  isEligible(): boolean{
     this.eligible = this.userSaldo > 0 && this.vagasCount > 0 && !this.bought() && !this.isTimeOver();
     return this.eligible;
   }
 
+
+  /**
+   * Realizar a compra da refeição.
+   */
   book(): void{
 
-    if(this.isEligible()){
-      this.saldoPromise()
-        .then(_ => {
+    if(this.isEligible()){              //se o usuário for legível,
+      this.saldoPromise()               //é feito uma cadeia de firebase.Promise<any>
+        .then(_ => {                    //que realizam todas as operações necessárias.
           this.countPromise()
               .then( _ => {
                 this.vagasPromise()
@@ -96,7 +105,8 @@ export class RefeicaoDetailPage {
               .catch(error => { console.log('Error in count() ' +  error.message); });
           })
           .catch(error => { console.log('Error in saldo() ' +  error.message); });
-    }else{
+    }else{  //Se o usuário não for legível, mostrar um alert adequado:
+      //OBS: Alerts não estão sendo usados, uma vez que o controle é feito no botão.
       let alert;
       if(this.userSaldo == 0){ //AlertController para a falta de saldo
         alert = this.alertCtrl.create({
@@ -122,6 +132,9 @@ export class RefeicaoDetailPage {
         
   }
 
+  /**
+   * Adicionar usuário na devida lista dentro de /refeicoes/
+   */
   addUser(): void{
     let userList;
     if(this.isVeg){
@@ -134,14 +147,17 @@ export class RefeicaoDetailPage {
     //userList.child(this.afAuth.auth.currentUser.uid).once('value', snapshot => {
     //  if( snapshot.val() == null ) userList.child(this.afAuth.auth.currentUser.uid).set(true); //nao esta na lista
     //})
+
+    //Adicionar o usuário direto, nesse ponto já se sabe que o usuário não está na lista
     userList.child(this.afAuth.auth.currentUser.uid).set(true);
+
     let alert = this.alertCtrl.create({ //AlertController para o sem numero de vagas
           title: 'Sucesso',
           subTitle: 'Compra realizada com sucesso!',
           buttons: [{ 
             text: 'OK',
             handler: _ => {
-              this.navCtrl.setRoot(HomePage);
+              this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
             }
           }]
     });
@@ -149,11 +165,17 @@ export class RefeicaoDetailPage {
 
   }
 
+  /**
+   * Promise que faz uma transcation no saldo do usuário
+   */
   saldoPromise(): firebase.Promise<any> {
     return firebase.database().ref('/users/'+ this.afAuth.auth.currentUser.uid+ '/saldo')
       .transaction( saldo => { return saldo - 1; });
   }
 
+  /**
+   * Promise que faz uma transcation no contador de usuários (default ou vegetariano)
+   */
   countPromise(): firebase.Promise<any>{
     if(this.isVeg){
       return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/usersVeg_count')
@@ -164,6 +186,9 @@ export class RefeicaoDetailPage {
     }
   }
 
+  /**
+   * Promise que faz uma transcation no número de vagas. (vagas = users_count - usersVeg_count)
+   */
   vagasPromise(): firebase.Promise<any>{ 
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
     return firebase.database().ref('/refeicoes/'+ this.refeicao.$key+ '/vagas')
@@ -173,15 +198,26 @@ export class RefeicaoDetailPage {
               });
   }
 
+  /**
+   * Promise que adiciona o id da refeição no documento do usuário.
+   */
   addRefeicaoToUser(): firebase.Promise<any> {
     return firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/refeicoes')
       .child(this.refeicao.$key).set(true); //nao esta na lista
   }
 
+  /**
+   * Verifica se o tempo para a compra da refeição esgotou.
+   * @returns {true} Se o tempo esgotou.
+   */
   isTimeOver(): boolean{
    return moment().isAfter(this.refeicao.timestamp); //verificar data maxima de compra
   }
 
+  /**
+   * Verifica se o usuário já comprou essa refeição.
+   * @returns {true} Se já comprou.
+   */
   bought(): boolean {
     let bought: boolean;
     //verificar se o usuario ja comprou essa refeição

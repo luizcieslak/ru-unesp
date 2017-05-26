@@ -14,18 +14,10 @@ import 'moment/locale/pt-br';
 })
 export class HomePage {
 
-  //event fired before page is loaded. Checks if the user is authenticated.
-  ionViewCanEnter() {
-    return this.auth !== null;
-  }
+  loading: Loading; //loading component.
+  shownGroup = null; //Variável para a accordion list.
 
-  loading: Loading; //loading component
-  shownGroup = null;
-
-  //user from auth
-  auth: any;
   user: FirebaseObjectObservable<any>;
-  userRefeicoes: any;
   refeicoesKey: Array<any>;
   refeicoes: Array<any> = [];
 
@@ -33,36 +25,32 @@ export class HomePage {
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
   public actionSheetCtrl: ActionSheetController) {
 
-    //create present the loading
+    //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
-
-    afAuth.authState.subscribe(auth => {
-        if (!auth) {
-          this.auth = null;        
-          return;
-        }
-        this.auth = auth;    
-    });
     
-    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid); 
-    this.user.subscribe( user =>{
+    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid); //pegar o usuário
+    this.user.subscribe( user =>{ //depois de carregado, 
       if(user.refeicoes){
-        this.refeicoesKey = Object.keys(user.refeicoes);
-        this.refeicoesKey.forEach(key => {
-          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key);
+        this.refeicoesKey = Object.keys(user.refeicoes); //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
+        this.refeicoesKey.forEach(key => { //então, para cada chave
+          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key); //pegar outras informações da refeição
           refeicaoObservable.subscribe(refeicao => {
-            this.refeicoes.push(refeicao); 
+            this.refeicoes.push(refeicao); //e dar um push para o array.
           })
         })
       }
 
-      this.loading.dismiss();
+      this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
 
     
   }
 
+  /**
+   * Alterna o estado de um item da accordion list.
+   * @param {Number} group O index do item da lista
+  */
   toggleGroup(group) {
       if (this.isGroupShown(group)) {
           this.shownGroup = null;
@@ -71,14 +59,26 @@ export class HomePage {
       }
   }
 
-  isGroupShown(group) {
+  /**
+   * Checa se o grupo recebido está ativado.
+   * @param {Number} group O index do item da lista.
+  */
+  isGroupShown(group): boolean {
       return this.shownGroup === group;
   };
 
+  /**
+   * Remove o usuário da refeição, reembolsando-o.
+   * @param {any} refeicao A refeição selecionada.
+   */
   remove(refeicao: any){
 
   }
 
+  /**
+   * Transfere a compra do usuário para outra refeição.
+   * @param {any} refeicao A refeição selecionada.
+   */
   transfer(refeicao: any){
 
   }

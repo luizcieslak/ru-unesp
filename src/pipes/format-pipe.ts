@@ -1,6 +1,7 @@
 import { Injectable, Pipe } from '@angular/core';
 import * as moment from 'moment';
 
+// Pipe que utiliza a função format() do momentjs para timestamps.
 @Pipe({
   name: 'format'
 })

@@ -12,13 +12,6 @@ import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/data
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 
-
-/*
-  Generated class for the Signup page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   selector: 'page-signup',
   templateUrl: 'signup.html'
@@ -54,6 +47,9 @@ export class SignupPage {
     console.log('ionViewDidLoad SignupPage');
   }
 
+  /**
+   * Cria uma conta com email e senha caso o formulário for válido.
+   */
   signUp(): void{
     this.submitAttempt = true;
     if(this.signupForm.valid){
@@ -71,6 +67,9 @@ export class SignupPage {
     }
   }
 
+  /**
+   * Executa funções após o signUp().
+   */
   onSignUpSuccess(): void{
     this.postSignup(this.afAuth.auth.currentUser.uid,this.signupForm.value) //store the additional info (name, RA) into the database
       .then( () => this.onPostSignUpSuccess() )
@@ -79,7 +78,7 @@ export class SignupPage {
   }
 
   /**
-   * Function called after AuthService.signUp() to store user's additional info.
+   * Armazena os outros dados do usuário na árvore /users/
    */
   postSignup(uid: string, data): firebase.Promise<any>{
     let user: FirebaseObjectObservable<any>;
@@ -96,6 +95,9 @@ export class SignupPage {
     }));
   }
 
+  /**
+   * Desloga o usuário após a criação (O login após signup é padrão do Firebase).
+   */
   onPostSignUpSuccess(): void{
     console.log('onPostSignUpSuccess()');
     this.afAuth.auth.signOut();

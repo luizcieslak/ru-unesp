@@ -1,5 +1,7 @@
 import { FormControl, FormGroup } from '@angular/forms';
-
+/**
+* Verifica se a senha e confirmação de senha digitadas estão iguais.
+*/
 export function matchingPasswords(passwordKey: string, confirmPasswordKey: string) {
   return (group: FormGroup): {[key: string]: any} => {
     let password = group.controls[passwordKey];

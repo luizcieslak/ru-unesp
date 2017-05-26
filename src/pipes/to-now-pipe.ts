@@ -1,15 +1,12 @@
 import { Injectable, Pipe } from '@angular/core';
 import * as moment from 'moment';
 
-/*
-  Generated class for the MomentPipe pipe.
+// Pipe que utiliza a função toNow() do momentjs para timestamps.
 
-  See https://angular.io/docs/ts/latest/guide/pipes.html for more info on
-  Angular 2 Pipes.
-*/
 @Pipe({
   name: 'toNow'
 })
+
 @Injectable()
 export class ToNowPipe {
   transform(value: Date|moment.Moment): any {

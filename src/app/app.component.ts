@@ -39,8 +39,8 @@ export class MyApp {
     public afDB: AngularFireDatabase, public events: Events) {
     this.initializeApp();
     
-    //listen for a 'login' event.
-    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //then, call onLoginSuccess()
+    //Escutar pelo evento 'login' criado na LoginPage.
+    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
 
     this.pages = [
       { title: 'Home', component: HomePage, icon: 'home' },
@@ -66,11 +66,17 @@ export class MyApp {
     this.nav.setRoot(page.component);
   }
 
+  /**
+   * Pega a imagem do usuário no Gravatar.
+   */
   onLoginSuccess(): void{ //get logged user
     this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
     this.profilePicture = "https://www.gravatar.com/avatar/" + md5(this.afAuth.auth.currentUser.email.toLowerCase(), 'hex');
   }
 
+  /**
+   * Desloga o usuário.
+   */
   signOut(): void{
     this.afAuth.auth.signOut();
     this.nav.setRoot(LoginPage);
