@@ -8,15 +8,28 @@
 </ion-header>
 
 <ion-content padding>
-  <h3>Ionic Menu Starter</h3>
 
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will show you the way.
-  </p>
+  <ion-list>
+    <ion-item-divider> Próximas refeições</ion-item-divider>
+    <ion-item *ngFor="let r of refeicoes; let i=index" text-wrap [ngClass]="{active: isGroupShown(i)}" (click)="toggleGroup(i)">
+      {{ r.timestamp | format:'LL' }}
+      <ion-icon item-right small [name]="isGroupShown(i) ? 'arrow-dropdown' : 'arrow-dropright'"></ion-icon>
+      <div *ngIf="isGroupShown(i)">
+        <br>
+        Detalhes da refeição:                      <br><br>
+        Pratos base: {{ r.base1 }} e {{ r.base2 }} <br>
+        Principal: {{ r.principal }}               <br>
+        Vegetariano: {{ r.veg }}                   <br>
+        Guarnição: {{ r.guarnicao }}               <br>
+        Saladas: {{ r.salada1 }} e {{ r.salada2 }} <br>
+        Sobremesa: {{ r.sobremesa }}               <br>
+        Suco: {{ r.suco }}                         <br><br>
+        <button ion-button (click)= "remove(r)" outline color="danger">Desistir</button>
+        <button ion-button (click)= "remove(r)" outline>Transferir</button>
+      </div>
+    </ion-item>
+  </ion-list>
 
-    {{ auth.email }}
+  <pre>{{ user | async | json}}</pre>
 
-    {{ user | async | json}}
-
-  <button ion-button secondary menuToggle>Toggle Menu</button>
 </ion-content>
