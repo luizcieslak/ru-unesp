@@ -19,6 +19,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 //firebase
 import { FirebaseConfig } from "../firebase-config";
 import { AngularFireModule } from 'angularfire2';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { AngularFireAuthModule } from 'angularfire2/auth';
 
 //providers
 import { AuthService } from "../providers/auth-service";
@@ -26,7 +28,9 @@ import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
 
 //using moment as pipe
-import { MomentPipe } from '../pipes/moment-pipe'
+import { FormatPipe } from '../pipes/format-pipe';
+import { FromNowPipe } from '../pipes/from-now-pipe';
+import { TitleCasePipe } from '../pipes/title-case-pipe';
 
 @NgModule({
   declarations: [
@@ -38,12 +42,16 @@ import { MomentPipe } from '../pipes/moment-pipe'
     TransferenciaPage,
     LoginPage,
     SignupPage,
-    MomentPipe
+    FormatPipe,
+    TitleCasePipe,
+    FromNowPipe
   ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
-    AngularFireModule.initializeApp(FirebaseConfig)
+    AngularFireModule.initializeApp(FirebaseConfig),
+    AngularFireDatabaseModule,
+    AngularFireAuthModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -59,9 +67,9 @@ import { MomentPipe } from '../pipes/moment-pipe'
   providers: [
     StatusBar,
     SplashScreen,
-    AuthService,
-    UserService,
     RefeicaoService,
+    UserService,
+    AuthService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

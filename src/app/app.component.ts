@@ -11,9 +11,8 @@ import { TransferenciaPage } from '../pages/transferencia/transferencia';
 
 import { LoginPage } from '../pages/login/login';
 
-import { AuthService } from '../providers/auth-service';
-
-import { AngularFire, FirebaseObjectObservable } from 'angularfire2';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+import { AngularFireAuth } from 'angularfire2/auth';
 
 //gravatar requires a MD5 hash of user's email address.
 import md5 from 'crypto-md5';
@@ -36,12 +35,12 @@ export class MyApp {
 
 
   constructor(public platform: Platform, public statusBar: StatusBar, 
-    public splashScreen: SplashScreen, private _auth: AuthService,
-    public af: AngularFire, public events: Events) {
+    public splashScreen: SplashScreen, private afAuth: AngularFireAuth,
+    public afDB: AngularFireDatabase, public events: Events) {
     this.initializeApp();
     
-    //listen for a 'login' event.
-    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //then, call onLoginSuccess()
+    //Escutar pelo evento 'login' criado na LoginPage.
+    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
 
     this.pages = [
       { title: 'Home', component: HomePage, icon: 'home' },
@@ -67,21 +66,19 @@ export class MyApp {
     this.nav.setRoot(page.component);
   }
 
+  /**
+   * Pega a imagem do usuário no Gravatar.
+   */
   onLoginSuccess(): void{ //get logged user
-    this.user = this.af.database.object('/users/'+this._auth.uid);  
-    
-    //for now we need to subscribe and store in different variables
-    //due to the problem that using {{ user?.name | async }} in app.html is not working
-    this.user.subscribe( snapshot => {
-      this.name = snapshot.name;
-      this.saldo = snapshot.saldo;
-
-      this.profilePicture = "https://www.gravatar.com/avatar/" + md5(snapshot.email.toLowerCase(), 'hex');
-    }, error => { console.log('Error',error) });
+    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
+    this.profilePicture = "https://www.gravatar.com/avatar/" + md5(this.afAuth.auth.currentUser.email.toLowerCase(), 'hex');
   }
 
+  /**
+   * Desloga o usuário.
+   */
   signOut(): void{
-    this._auth.signOut();
+    this.afAuth.auth.signOut();
     this.nav.setRoot(LoginPage);
   }
 }

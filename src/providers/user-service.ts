@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
 
-import { AngularFire, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
 //import firebase namespace for functions that aren't in AngularFire2
-import * as firebase from 'firebase';
+import * as firebase from 'firebase/app';
 
 import { AuthService } from '../providers/auth-service';
 
@@ -12,16 +12,18 @@ import { AuthService } from '../providers/auth-service';
 export class UserService {
 
   user: FirebaseObjectObservable<any>;
+  data: any;
 
-  constructor(public af: AngularFire, private _auth: AuthService ) {
+
+  constructor(public afDB: AngularFireDatabase, private _auth: AuthService ) {
   }
 
   /**
    * Function called after AuthService.signUp() to store user's additional info.
    */
-  postSignup(uid: string, data): any{
-    this.user = this.af.database.object('users/'+uid);
-    this.user.set(({
+  postSignup(uid: string, data): firebase.Promise<any>{
+    this.user = this.afDB.object('users/'+uid);
+    return this.user.set(({
       name: data.name,
       ra: data.ra,
       email: data.email,
@@ -31,9 +33,28 @@ export class UserService {
       created_at: firebase.database.ServerValue.TIMESTAMP,
       updated_at: firebase.database.ServerValue.TIMESTAMP
     }));
+  }
 
-    //logout the user, because AngularFireAuth.createUser() logins the user automatically.
-    this._auth.signOut();
+  /**
+   * @returns true if user is set by setUser().
+   */
+  get active(): boolean{
+    return this.user !== null;
+  }
+
+  get saldo(): number{
+    return this.active? this.data.saldo : null;
+  }
+
+  get veg(): boolean{
+    return this.active? this.data.veg : null;
+  }
+
+  setUser(uid: string){
+    this.user = this.afDB.object('users/'+uid);
+    this.user.subscribe( snapshot => {
+        this.data = snapshot;
+    })
   }
 
 }

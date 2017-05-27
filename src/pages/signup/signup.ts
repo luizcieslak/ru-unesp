@@ -8,16 +8,10 @@ import { matchingPasswords } from '../../validators/matching-passwords';
 
 import { LoginPage } from '../login/login';
 
-import { AuthService } from '../../providers/auth-service';
-import { UserService } from '../../providers/user-service';
+import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase/app';
 
-
-/*
-  Generated class for the Signup page.
-
-  See http://ionicframework.com/docs/v2/components/#navigation for more info on
-  Ionic pages and navigation.
-*/
 @Component({
   selector: 'page-signup',
   templateUrl: 'signup.html'
@@ -34,8 +28,8 @@ export class SignupPage {
   private signupError: string;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, 
-    private formBuilder: FormBuilder, private _auth: AuthService,
-    private _user: UserService) {
+    private formBuilder: FormBuilder, private afAuth: AngularFireAuth,
+    public afDB: AngularFireDatabase) {
 
       //Create FormBuilder with your inputs and their Validators.
       this.signupForm = this.formBuilder.group({
@@ -53,11 +47,14 @@ export class SignupPage {
     console.log('ionViewDidLoad SignupPage');
   }
 
+  /**
+   * Cria uma conta com email e senha caso o formulário for válido.
+   */
   signUp(): void{
     this.submitAttempt = true;
     if(this.signupForm.valid){
       //create a user using AuthService
-      this._auth.signUp(this.signupForm.value.email, this.signupForm.value.password)
+      this.afAuth.auth.createUserWithEmailAndPassword(this.signupForm.value.email, this.signupForm.value.password)
         //then, call onSignUpSuccess
         .then(() => this.onSignUpSuccess() )
         //if there is an error, display to the user.
@@ -66,13 +63,45 @@ export class SignupPage {
       //go to login page after all.
       //this.navCtrl.push(LoginPage);
     }else{
-      console.log("signupForm is not valid.");
+      console.log('signupForm is not valid.');
     }
   }
 
+  /**
+   * Executa funções após o signUp().
+   */
   onSignUpSuccess(): void{
-    this._user.postSignup(this._auth.uid,this.signupForm.value); //store the additional info (name, RA) into the database
-    this.navCtrl.push(LoginPage); //go to login page after all.
+    this.postSignup(this.afAuth.auth.currentUser.uid,this.signupForm.value) //store the additional info (name, RA) into the database
+      .then( () => this.onPostSignUpSuccess() )
+      .catch( error => { console.log('error on postSignup(): '+error.message); });
+    
+  }
+
+  /**
+   * Armazena os outros dados do usuário na árvore /users/
+   */
+  postSignup(uid: string, data): firebase.Promise<any>{
+    let user: FirebaseObjectObservable<any>;
+    user = this.afDB.object('users/'+uid);
+    return user.set(({
+      name: data.name,
+      ra: data.ra,
+      email: data.email,
+      saldo: 0,
+      refeicoes: {},
+      veg: data.veg,
+      created_at: firebase.database.ServerValue.TIMESTAMP,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    }));
+  }
+
+  /**
+   * Desloga o usuário após a criação (O login após signup é padrão do Firebase).
+   */
+  onPostSignUpSuccess(): void{
+    console.log('onPostSignUpSuccess()');
+    this.afAuth.auth.signOut();
+    this.navCtrl.push(LoginPage);
   }
 
 }
