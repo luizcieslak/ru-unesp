@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, AlertController, LoadingController, Loading } from 'ionic-angular';
+import { NavController, NavParams, AlertController, LoadingController, Loading, ToastController} from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
@@ -31,11 +31,13 @@ export class RefeicaoDetailPage {
   userSaldo: Number;
   isVeg: boolean; 
 
-  eligible: boolean;
+  canBuy: boolean; //Variável que guarda se o usuário pode comprar esta refeição. (usada no botão)
+  canQueue: boolean; //Variável que guarda se o usuário pode entrar na fila de espera. (usada no botão)
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     private afAuth: AngularFireAuth, public afDB:AngularFireDatabase,
-    public alertCtrl: AlertController, public loadingCtrl: LoadingController) {
+    public alertCtrl: AlertController, public loadingCtrl: LoadingController,
+    public toastCtrl: ToastController) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
@@ -60,7 +62,10 @@ export class RefeicaoDetailPage {
         else if(this.isTimeOver()) this.buttonMsg = 'Tempo esgotado!';
         else if(this.userSaldo == 0) this.buttonMsg = 'Sem saldo!';
         else if(this.bought()) this.buttonMsg = 'Já comprou!';
-        this.isEligible(); //faz o update na variável this.eligible
+
+        //iniciar as variaveis canBuy e canQueue
+        this.isEligible(); 
+        this.isEligibleQueue();
         
         this.loading.dismiss();
       });
@@ -77,8 +82,8 @@ export class RefeicaoDetailPage {
    * @returns {true} se o usuário ter saldo suficiente, ainda ter vaga, usuário não ter comprado essa refeicao e não ter esgotado o tempo máximo de compra.
   */
   isEligible(): boolean{
-    this.eligible = this.userSaldo > 0 && this.vagasCount > 0 && !this.bought() && !this.isTimeOver();
-    return this.eligible;
+    this.canBuy = this.userSaldo > 0 && this.vagasCount > 0 && !this.bought() && !this.isTimeOver();
+    return this.canBuy;
   }
 
   /**
@@ -173,7 +178,8 @@ export class RefeicaoDetailPage {
     //Adicionar o usuário direto, nesse ponto já se sabe que o usuário não está na lista
     userList.child(this.afAuth.auth.currentUser.uid).set(true);
 
-    let alert = this.alertCtrl.create({ //AlertController para o sem numero de vagas
+    //Não seria melhor um toast?
+    let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
           title: 'Sucesso',
           subTitle: 'Compra realizada com sucesso!',
           buttons: [{ 
@@ -249,5 +255,77 @@ export class RefeicaoDetailPage {
     })
     return bought;
   }
+
+  /**
+   * Verifica se o usuário já esta na fila de espera
+   */
+  isQueued(): boolean{
+    let queued: boolean;
+    let userQueue = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/queue');
+    userQueue.child(this.refeicao.$key).once('value', snapshot => {
+      queued = snapshot.val() !== null;
+    })
+    return queued;
+  }
+
+  /**
+   * Verifica se o usuário pode entrar na fila de espera
+   */
+   isEligibleQueue(): boolean{
+      this.canQueue = this.vagasCount == 0 && this.userSaldo > 0 && !this.isQueued();
+      return this.canQueue
+   }
+
+   /**
+    * Confirma a entrada do usuário na fila de espera.
+    */
+    confirmQueue(): void{
+      let confirm = this.alertCtrl.create({
+        title: 'Confirmar entrada na fila',
+        message: 'Tem certeza que deseja entrar na fila? Seu saldo será debitado e te avisaremos caso você consiga uma vaga. Se não conseguir, seu saldo será reembolsado.',
+        buttons: [
+          {
+            text: 'Cancelar',
+          },
+          {
+            text: 'Sim',
+            handler: () => {
+              this.queue();
+            }
+          }
+        ]
+      });
+      confirm.present();
+    }
+
+    /**
+     * Coloca o usuário na fila de espera.
+     */
+    queue(): void{
+      //TODO: verificar se precisa fazer distinção de usuários (default e veg) na fila de espera.
+      let refeicaoQueue = firebase.database().ref('refeicoes/'+ this.refeicao.$key+ '/queue');
+      refeicaoQueue.child(this.afAuth.auth.currentUser.uid).set(true) //adiciona o user na fila da refeição
+        .then( _ => {
+          let userQueue = firebase.database().ref('users/'+ this.afAuth.auth.currentUser.uid +'/queue');
+          userQueue.child(this.refeicao.$key).set(true)
+            .then( _ => this.onQueueSuccess())
+            .catch( error => console.log('error in userQueue: '+ error.message));
+        })
+        .catch(error => console.log('error in refeicaoQueue: '+ error.message))
+    }
+
+    onQueueSuccess():void{
+      let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
+          title: 'Sucesso',
+          subTitle: 'Você entrou na fila!',
+          buttons: [{ 
+             text: 'OK',
+             handler: _ => {
+                this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+             }
+          }]
+      });
+      alert.present();
+    }
 
 }

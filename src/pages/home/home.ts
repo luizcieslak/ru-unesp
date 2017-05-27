@@ -21,6 +21,9 @@ export class HomePage {
   refeicoesKey: Array<any>;
   refeicoes: Array<any> = [];
 
+  queueKey: Array<any>;
+  queueRefeicoes: Array<any> = [];
+
   constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
   public actionSheetCtrl: ActionSheetController) {
@@ -37,6 +40,15 @@ export class HomePage {
           let refeicaoObservable = this.afDB.object('/refeicoes/'+ key); //pegar outras informações da refeição
           refeicaoObservable.subscribe(refeicao => {
             this.refeicoes.push(refeicao); //e dar um push para o array.
+          })
+        })
+
+        //repetir o mesmo processo para as refeições na lista de espera
+        this.queueKey = Object.keys(user.queue);
+        this.queueKey.forEach(key => {
+          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key);
+          refeicaoObservable.subscribe(refeicao => {
+            this.queueRefeicoes.push(refeicao);
           })
         })
       }
@@ -83,6 +95,13 @@ export class HomePage {
 
   }
 
+  /**
+   * Remove o usuário da fila, reembolsando-o.
+   * @param {any} refeicao A refeição selecionada.
+   */
+  removeQueue(refeicao: any){
+
+  }
 
 
 }
