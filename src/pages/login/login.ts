@@ -27,11 +27,8 @@ export class LoginPage {
 
   //String variable that stores the server error in a failed signin.
   private loginError: string;
-  UNKNOWN_USER = new AuthInfo(null);
 
-  authInfo: BehaviorSubject<AuthInfo> = new BehaviorSubject<AuthInfo>(this.UNKNOWN_USER);
-
-  
+ 
   constructor(public navCtrl: NavController, public navParams: NavParams, 
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
     public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
