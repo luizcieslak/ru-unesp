@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading, ActionSheetController } from 'ionic-angular';
+import { NavController, LoadingController, Loading, AlertController } from 'ionic-angular';
 
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
@@ -7,6 +7,13 @@ import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/data
 //moment.js library for handling timestamps
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
+
+import { TimeService } from '../../providers/time-service';
+
+//import firebase namespace for functions that aren't in AngularFire2
+import * as firebase from 'firebase/app';
+
+import * as Rx from 'rxjs/Rx';
 
 @Component({
   selector: 'page-home',
@@ -26,16 +33,20 @@ export class HomePage {
 
   constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
-  public actionSheetCtrl: ActionSheetController) {
+  public alertCtrl: AlertController, public time: TimeService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
     
-    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid); //pegar o usuário
-    this.user.subscribe( user =>{ //depois de carregado, 
+    //Observable do Usuário
+    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);
+    this.user.subscribe( user =>{
       if(user.refeicoes){
-        this.refeicoesKey = Object.keys(user.refeicoes); //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
+        //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
+        this.refeicoesKey = Object.keys(user.refeicoes); 
+        //Resetar o array caso haja alguma atualização.
+        this.refeicoes = [];
         this.refeicoesKey.forEach(key => { //então, para cada chave
           let refeicaoObservable = this.afDB.object('/refeicoes/'+ key); //pegar outras informações da refeição
           refeicaoObservable.subscribe(refeicao => {
@@ -84,7 +95,39 @@ export class HomePage {
    * @param {any} refeicao A refeição selecionada.
    */
   remove(refeicao: any){
+    console.log('refeicao key', refeicao.$key);
+    //verificar se está dentro do tempo
+    if(this.time.isAllowed(refeicao.timestamp)){
+      //Remover o usuário da refeição
+      const refeicaoUsers = this.afDB.list('/refeicoes/'+ refeicao.$key +'/users');
 
+      //Remover a refeição do usuário
+      const userRefeicoes = this.afDB.list('/users/'+this.afAuth.auth.currentUser.uid+'/refeicoes/');
+
+      //Adicionar uma vaga na refeicao
+      const vagas = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/vagas').transaction(vagas => vagas + 1);
+
+      refeicaoUsers.subscribe(_ => {
+        refeicaoUsers.remove(this.afAuth.auth.currentUser.uid);
+
+        userRefeicoes.subscribe(_ => {
+          userRefeicoes.remove(refeicao.$key);
+          vagas
+            .then(_ => console.log('remove sucessfull'))
+            .catch(error => console.log('error in remove()',error));
+        });
+
+      });
+
+      
+    }else{
+      let alert = this.alertCtrl.create({
+        title: 'Tempo Esgotado',
+        subTitle: 'O tempo para realizar esta operação está esgotado.',
+        buttons: ['OK']
+      });
+      alert.present();
+    }
   }
 
   /**

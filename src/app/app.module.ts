@@ -26,6 +26,7 @@ import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AuthService } from "../providers/auth-service";
 import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
+import { TimeService } from '../providers/time-service';
 
 //using moment as pipe
 import { FormatPipe } from '../pipes/format-pipe';
@@ -70,6 +71,7 @@ import { TitleCasePipe } from '../pipes/title-case-pipe';
     RefeicaoService,
     UserService,
     AuthService,
+    TimeService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
