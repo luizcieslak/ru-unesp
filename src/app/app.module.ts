@@ -33,6 +33,9 @@ import { FormatPipe } from '../pipes/format-pipe';
 import { FromNowPipe } from '../pipes/from-now-pipe';
 import { TitleCasePipe } from '../pipes/title-case-pipe';
 
+//Angular http
+import { HttpModule } from '@angular/http';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -52,7 +55,8 @@ import { TitleCasePipe } from '../pipes/title-case-pipe';
     IonicModule.forRoot(MyApp),
     AngularFireModule.initializeApp(FirebaseConfig),
     AngularFireDatabaseModule,
-    AngularFireAuthModule
+    AngularFireAuthModule,
+    HttpModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

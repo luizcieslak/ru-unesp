@@ -23,14 +23,14 @@ export class RefeicaoListPage {
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public loadingCtrl: LoadingController, public afDB: AngularFireDatabase,
-    public time: TimeService, public refeicao: RefeicaoService) {
+    public time: TimeService, public _refeicao: RefeicaoService) {
 
       //create present the loading
       this.loading = this.loadingCtrl.create();
       this.loading.present();
       
       //Pegar a lista de refeições de maneira assíncrona
-      this.refeicoes = this.refeicao.nextRefeicoes();
+      this.refeicoes = this._refeicao.nextRefeicoes();
 
       //Assim que os dados forem carregados, fechar o loading component.
       this.refeicoes.subscribe( snapshots => {

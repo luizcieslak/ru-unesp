@@ -1,5 +1,5 @@
 <!--
-  Generated template for the RefeicaoDetail page.
+  Generated template for the refeicaoParamsDetail page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
@@ -9,20 +9,20 @@
         <button ion-button menuToggle>
           <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>{{refeicao.timestamp | format: 'LL'}}</ion-title>
+        <ion-title>{{refeicaoParams.timestamp | format: 'LL'}}</ion-title>
     </ion-navbar>
 </ion-header>
 
 
 <ion-content padding>
 
-  <h3><b>Prato Base: </b> {{refeicao.base1}} e {{refeicao.base2}}</h3>
-  <h3><b>Prato Principal: </b> {{refeicao.principal}}</h3>
-  <h3><b>Opcao vegetariana: </b> {{refeicao.veg}}</h3>
-  <h3><b>Guarnição: </b> {{refeicao.guarnicao}}</h3>
-  <h3><b>Saladas: </b> {{refeicao.salada1}} e {{refeicao.salada2}}</h3>
-  <h3><b>Sobremesa: </b> {{refeicao.sobremesa}} </h3>
-  <h3><b>Suco: </b> {{refeicao.suco}}</h3>
+  <h3><b>Prato Base: </b> {{refeicaoParams.base1}} e {{refeicaoParams.base2}}</h3>
+  <h3><b>Prato Principal: </b> {{refeicaoParams.principal}}</h3>
+  <h3><b>Opcao vegetariana: </b> {{refeicaoParams.veg}}</h3>
+  <h3><b>Guarnição: </b> {{refeicaoParams.guarnicao}}</h3>
+  <h3><b>Saladas: </b> {{refeicaoParams.salada1}} e {{refeicaoParams.salada2}}</h3>
+  <h3><b>Sobremesa: </b> {{refeicaoParams.sobremesa}} </h3>
+  <h3><b>Suco: </b> {{refeicaoParams.suco}}</h3>
 
   <button ion-button (click)="confirmBook()" block [color]="canBuy? '' : 'danger'" [disabled]="!canBuy">{{ buttonMsg }}</button>
   <button ion-button block color="secondary" *ngIf="canQueue" (click)="confirmQueue()">Entrar na fila de espera.</button>
