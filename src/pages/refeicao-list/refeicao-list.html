@@ -28,12 +28,13 @@
   </ion-card-content>
   <ion-row>
     <ion-col center text-center>
-      {{r.vagas}} vagas. Reserva acaba em {{r. timestamp | fromNow }}
+      <span *ngIf="r.isAllowed">{{r.vagas}} vagas. Reserva acaba em {{r. timestamp | fromNow }}</span>
+      <span *ngIf="!r.isAllowed">Tempo esgotado</span>
     </ion-col>
     <ion-col>
       <button ion-button icon-left clear small (click)="gotoDetails(r)">
-        <ion-icon name="cart"></ion-icon>
-        <div>Reservar</div>
+        <ion-icon name="information-circle"></ion-icon>
+        <div>Ver detalhes</div>
       </button>
     </ion-col>
   </ion-row>

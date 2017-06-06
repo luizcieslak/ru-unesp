@@ -1,18 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
-import 'rxjs/add/operator/map';
 
-/*
-  Generated class for the RefeicaoService provider.
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
-  See https://angular.io/docs/ts/latest/guide/dependency-injection.html
-  for more info on providers and Angular 2 DI.
-*/
+import { TimeService } from './time-service';
+
 @Injectable()
 export class RefeicaoService {
 
-  constructor(public http: Http) {
-    console.log('Hello RefeicaoService Provider');
+  constructor(public db: AngularFireDatabase, public time: TimeService) {
+  }
+
+  nextRefeicoes(): FirebaseListObservable<any>{
+    const now = this.time.localTimestamp();
+
+    return this.db.list('/refeicoes',{
+      query:{
+          orderByChild: 'timestamp',
+          startAt: now
+      }
+    })
   }
 
 }
