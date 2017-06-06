@@ -189,12 +189,49 @@ export class HomePage {
 
   }
 
+  confirmRemoveQueue(refeicao: any){
+    let confirm = this.alertCtrl.create({
+      title: 'Confirmar Desistência',
+      message: 'Tem certeza que deseja desistir desta fila? Seu saldo será reembolsado.',
+      buttons: [
+        {
+          text: 'Cancelar',
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            this.removeQueue(refeicao);
+          }
+        }
+      ]
+    });
+    confirm.present();
+  }
+
   /**
    * Remove o usuário da fila, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
   removeQueue(refeicao: any){
+    //Remover o usuário da refeição
+    const refeicaoQueue = this.afDB.list('/refeicoes/'+ refeicao.$key +'/queue');
 
+    //Remover a refeição do usuário
+    const userQueue = this.afDB.list('/users/'+this.afAuth.auth.currentUser.uid+'/queue/');
+
+    //decrementar o contador da fila
+    const queueCount = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/queue_count').transaction(queue => queue - 1);
+
+    refeicaoQueue.subscribe(_ => {
+       refeicaoQueue.remove(this.afAuth.auth.currentUser.uid);
+
+      userQueue.subscribe(_ => {
+        userQueue.remove(refeicao.$key);
+        queueCount
+          .then(_ => console.log('remove sucessfull'))
+          .catch(error => console.log('error in removeQueue()',error));
+        });
+      });
   }
 
 
