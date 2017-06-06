@@ -30,26 +30,33 @@ export class RefeicaoService {
  /**
    * Realizar a compra da refeição.
   */
-  book(refeicao: any, uid: string, isVeg: boolean): void{
-    this._user.debitSaldo(uid)
-      .then(_ => {                    
-         this.incrementCount(refeicao,isVeg)
-            .then( _ => {
-              this.subtractVagas(refeicao)
-                .then( _ => {
-                  this._user.addRefeicao(refeicao,uid)
-                    .then( _ => {
-                      this.addUser(refeicao, uid, isVeg)
-                        .then( _ => console.log('book() success'))
-                        .catch( error => console.log('Error in addUser()',error))
-                     })
-                     .catch(error => console.log('Error in addRefeicaoToUser() ',error))
-                })
-                .catch(error => console.log('Error in vagas() ',error));
-            })
-            .catch(error =>console.log('Error in count() ',error));
-      })
-      .catch(error =>console.log('Error in saldo() ',error));   
+  book(refeicao: any, uid: string, isVeg: boolean): Promise<any>{
+    // this._user.debitSaldo(uid)
+    //   .then(_ => {                    
+    //      this.incrementCount(refeicao,isVeg)
+    //         .then( _ => {
+    //           this.subtractVagas(refeicao)
+    //             .then( _ => {
+    //               this._user.addRefeicao(refeicao,uid)
+    //                 .then( _ => {
+    //                   this.addUser(refeicao, uid, isVeg)
+    //                     .then( _ => console.log('book() success'))
+    //                     .catch( error => console.log('Error in addUser()',error))
+    //                  })
+    //                  .catch(error => console.log('Error in addRefeicaoToUser() ',error))
+    //             })
+    //             .catch(error => console.log('Error in vagas() ',error));
+    //         })
+    //         .catch(error => console.log('Error in count() ',error));
+    //   })
+    //   .catch(error => console.log('Error in saldo() ',error));   
+    const debitSaldo = this._user.debitSaldo(uid);
+    const incrementCount = this.incrementCount(refeicao, isVeg);
+    const vagas = this.subtractVagas(refeicao);
+    const addRefeicaoToUser = this._user.addRefeicao(refeicao, uid);
+    const addUserToRefeicao = this.addUser(refeicao, uid, isVeg);
+
+    return Promise.all([debitSaldo, incrementCount, vagas, addRefeicaoToUser, addUserToRefeicao]);
   }
 
   addUser(refeicao: any, uid: string, isVeg: boolean): firebase.Promise<any>{

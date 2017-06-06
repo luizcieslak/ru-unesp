@@ -123,24 +123,23 @@ export class RefeicaoDetailPage {
   }
 
   book(): void{
-    this._refeicao.book(this.refeicaoParams, this.auth.uid, this.isVeg);
-
-    //atualizar bought
-    //mostrar mensagem
-    
-    //Mostrar mensagem de confirmação.
-    //Não seria melhor um toast?
-    let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
-           title: 'Sucesso',
-          subTitle: 'Compra realizada com sucesso!',
-          buttons: [{ 
-            text: 'OK',
-            handler: _ => {
-               this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
-             }
-          }]
-    });
-    alert.present();
+    this._refeicao.book(this.refeicaoParams, this.auth.uid, this.isVeg)
+      .then(_ => {
+        //Mostrar mensagem de confirmação.
+        //Não seria melhor um toast?
+        let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
+              title: 'Sucesso',
+              subTitle: 'Compra realizada com sucesso!',
+              buttons: [{ 
+                text: 'OK',
+                handler: _ => {
+                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                }
+              }]
+        });
+        alert.present();
+      })
+      .catch(error => console.log('error in book()',error));
   }
 
   /**
