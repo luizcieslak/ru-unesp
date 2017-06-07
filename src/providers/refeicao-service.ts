@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
+import { AngularFireDatabase, FirebaseListObservable, FirebaseObjectObservable } from 'angularfire2/database';
 
 import { TimeService } from './time-service';
 import { UserService } from './user-service';
@@ -25,6 +25,14 @@ export class RefeicaoService {
           startAt: now
       }
     })
+  }
+
+  /**
+   * Pega a referência da refeição no banco de dados.
+   * @returns Observable.
+   */
+  refeicaoObservable(key: string): FirebaseObjectObservable<any>{
+    return this.db.object('refeicoes/'+ key);
   }
 
  /**
@@ -97,7 +105,14 @@ export class RefeicaoService {
   }
 
   /**
-   * Promise que faz uma transaction no número de vagas da refeição. (vagas = users_count - usersVeg_count)
+   * Retorna uma Promise contendo número de vagas da refeição.
+   */
+  getVagas(refeicao: any): firebase.Promise<any>{
+    return firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas);
+  }
+
+  /**
+   * Decrementa o número de vagas da refeição. (vagas = users_count - usersVeg_count)
    * @param refeicao A refeição a ser manipulada
    */
   subtractVagas(refeicao: any): firebase.Promise<any>{ 

@@ -78,10 +78,23 @@ export class RefeicaoDetailPage {
         else if(this.bought) this.buttonMsg = 'Já comprou!';
 
         //iniciar as variaveis canBuy e canQueue
-        this.isEligible(); 
-        this.isEligibleQueue();
+        const obs1 = this._user.canBuy(this.refeicaoParams);
+        obs1.subscribe(result =>{
+          console.log('canBuy?', result);
+          this.canBuy = result;
+
+          const obs2 = this._user.canQueue(this.refeicaoParams);
+          obs2.subscribe(result => {
+            console.log('canQueue?', result);
+            this.canQueue = result;
+
+            //Dispensar o Loadind Component
+            this.loading.dismiss();
+          })
+
+        })
         
-        this.loading.dismiss();
+
       });
 
     });
@@ -89,15 +102,6 @@ export class RefeicaoDetailPage {
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad RefeicaoDetailPage');
-  }
-
-  /**
-   * Verifica se o usuário pode realizar a compra.
-   * @returns {true} se o usuário ter saldo suficiente, ainda ter vaga, usuário não ter comprado essa refeicao e não ter esgotado o tempo máximo de compra.
-  */
-  isEligible(): boolean{
-    this.canBuy = this.userSaldo > 0 && this.vagasCount > 0 && !this.bought && this.isAllowed;
-    return this.canBuy;
   }
 
   /**
@@ -141,14 +145,6 @@ export class RefeicaoDetailPage {
       })
       .catch(error => console.log('error in book()',error));
   }
-
-  /**
-   * Verifica se o usuário pode entrar na fila de espera
-   */
-   isEligibleQueue(): boolean{
-      this.canQueue = this.vagasCount == 0 && this.userSaldo > 0 && !this._user.isQueued(this.refeicaoParams);
-      return this.canQueue
-   }
 
    /**
     * Função pré queue() que confirma a entrada do usuário na fila de espera.

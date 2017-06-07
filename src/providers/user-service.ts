@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
-
+import { Injectable, Inject } from '@angular/core';
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
+import { AuthService } from './auth-service';
+import { RefeicaoService } from './refeicao-service'; //not working :(
+import { TimeService } from './time-service';
+
+import Rx from "rxjs/Rx";
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
 
-import { AuthService } from '../providers/auth-service';
 
 @Injectable()
 export class UserService {
 
-  constructor(private afDB: AngularFireDatabase, private _auth: AuthService ) {
+  //can't import RefeicaoService here, gives 'can't resolve all parameters' error.
+  constructor(private afDB: AngularFireDatabase, private _auth: AuthService,
+  private _time: TimeService) {
   }
 
   /**
@@ -37,6 +42,63 @@ export class UserService {
    */
   userObservable(): FirebaseObjectObservable<any>{
     return this.afDB.object('users/'+ this._auth.uid);
+  }
+
+  getSaldo(): firebase.Promise<any>{
+    return firebase.database().ref('users/'+ this._auth.uid +'/saldo').transaction(saldo => saldo);
+  }
+
+  canBuy(refeicao: any): Rx.Observable<any>{
+    let subject = new Rx.Subject<any>();
+
+    let vagas: Number;
+    let saldo: Number;
+    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
+    const p2 = this.getSaldo();
+
+    Promise.all([p1,p2])
+      .then(values =>{
+        //values[0] é o resultado de p1, que é o n de vagas
+        //values[1] é o resultado de p2, que é o saldo.
+        vagas = values[0].snapshot.val();
+        saldo = values[1].snapshot.val();
+        if(vagas > 0 && saldo > 0 && !this.bought(refeicao) && this._time.isAllowed(refeicao.timestamp)){
+          subject.next(true);
+          subject.complete();
+        }else{
+          subject.next(false);
+        }
+      })
+      .catch(error => console.log('error in UserService canBuy()', error));
+    
+    return subject;
+  }
+
+  canQueue(refeicao: any): Rx.Observable<any>{
+    let subject = new Rx.Subject<any>();
+
+    let vagas: Number;
+    let saldo: Number;
+    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
+    const p2 = this.getSaldo();
+
+    Promise.all([p1,p2])
+      .then(values =>{
+        //values[0] é o resultado de p1, que é o n de vagas
+        //values[1] é o resultado de p2, que é o saldo.
+        vagas = values[0].snapshot.val();
+        saldo = values[1].snapshot.val();
+        if(vagas == 0 && saldo > 0 && !this.isQueued(refeicao) && this._time.isAllowed(refeicao.timestamp)){
+          //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
+          subject.next(true);
+          subject.complete();
+        }else{
+          subject.next(false);
+        }
+      })
+      .catch(error => console.log('error in UserService canBuy()', error));
+    
+    return subject;
   }
 
   /**
