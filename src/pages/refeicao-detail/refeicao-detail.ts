@@ -143,27 +143,15 @@ export class RefeicaoDetailPage {
   }
 
   /**
-   * Verifica se o usuário já esta na fila de espera
-   */
-  isQueued(): boolean{
-    let queued: boolean;
-    let userQueue = firebase.database().ref('users/'+ this.auth.uid +'/queue');
-    userQueue.child(this.refeicaoParams.$key).once('value', snapshot => {
-      queued = snapshot.val() !== null;
-    })
-    return queued;
-  }
-
-  /**
    * Verifica se o usuário pode entrar na fila de espera
    */
    isEligibleQueue(): boolean{
-      this.canQueue = this.vagasCount == 0 && this.userSaldo > 0 && !this.isQueued();
+      this.canQueue = this.vagasCount == 0 && this.userSaldo > 0 && !this._user.isQueued(this.refeicaoParams);
       return this.canQueue
    }
 
    /**
-    * Confirma a entrada do usuário na fila de espera.
+    * Função pré queue() que confirma a entrada do usuário na fila de espera.
     */
     confirmQueue(): void{
       let confirm = this.alertCtrl.create({
@@ -188,30 +176,21 @@ export class RefeicaoDetailPage {
      * Coloca o usuário na fila de espera.
      */
     queue(): void{
-      //TODO: verificar se precisa fazer distinção de usuários (default e veg) na fila de espera.
-      let refeicaoQueue = firebase.database().ref('refeicoes/'+ this.refeicaoParams.$key+ '/queue');
-      refeicaoQueue.child(this.auth.uid).set(true) //adiciona o user na fila da refeição
-        .then( _ => {
-          let userQueue = firebase.database().ref('users/'+ this.auth.uid +'/queue');
-          userQueue.child(this.refeicaoParams.$key).set(true)
-            .then( _ => this.onQueueSuccess())
-            .catch( error => console.log('error in userQueue: '+ error.message));
+      this._refeicao.queue(this.refeicaoParams)
+        .then(_ => {
+          let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
+              title: 'Sucesso',
+              subTitle: 'Você entrou na fila!',
+              buttons: [{ 
+                text: 'OK',
+                handler: _ => {
+                    this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                }
+              }]
+          });
+          alert.present();
         })
-        .catch(error => console.log('error in refeicaoQueue: '+ error.message))
-    }
-
-    onQueueSuccess():void{
-      let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
-          title: 'Sucesso',
-          subTitle: 'Você entrou na fila!',
-          buttons: [{ 
-             text: 'OK',
-             handler: _ => {
-                this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
-             }
-          }]
-      });
-      alert.present();
+        .catch(error => console.log('error in queue()', error));
     }
 
 }

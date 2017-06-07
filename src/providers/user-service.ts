@@ -72,4 +72,24 @@ export class UserService {
       .child(refeicao.$key).set(true); //nao esta na lista
   }
 
+  /**
+   * Verifica se o usuário já esta na fila de espera da refeição.
+   */
+  isQueued(refeicao: any): boolean{
+    let queued: boolean;
+    const userQueue = firebase.database().ref('users/'+ this._auth.uid +'/queue');
+    userQueue.child(refeicao.$key).once('value', snapshot => {
+      queued = snapshot.val() !== null;
+    })
+    return queued;
+  }
+
+  /**
+   * Adiciona a refeição na fila do usuário.
+   * @param refeicao A refeição a ser adicionada.
+   */
+  addToQueue(refeicao: any): firebase.Promise<any>{
+    return firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(true);
+  }
+
 }

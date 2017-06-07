@@ -59,6 +59,11 @@ export class RefeicaoService {
     return Promise.all([debitSaldo, incrementCount, vagas, addRefeicaoToUser, addUserToRefeicao]);
   }
 
+  /**
+   * Adiciona o usuário na refeição fornecida nos parâmetros
+   * @param refeicao A refeição a ser manipulada
+   * @param {boolean} isVeg Usuário vegetariano? 
+   */
   addUser(refeicao: any, isVeg: boolean): firebase.Promise<any>{
     let userList;
     if(isVeg){
@@ -77,7 +82,9 @@ export class RefeicaoService {
   }
 
   /**
-   * Promise que faz uma transation no contador de usuários (default ou vegetariano)
+   * Promise que faz uma transaction no contador de usuários da refeição
+   * @param refeicao A refeição a ser manipulada
+   * @param {boolean} isVeg Usuário vegetariano? 
   */
   incrementCount(refeicao: any, isVeg: boolean): firebase.Promise<any>{
     if(isVeg){
@@ -90,7 +97,8 @@ export class RefeicaoService {
   }
 
   /**
-   * Promise que faz uma transation no número de vagas. (vagas = users_count - usersVeg_count)
+   * Promise que faz uma transaction no número de vagas da refeição. (vagas = users_count - usersVeg_count)
+   * @param refeicao A refeição a ser manipulada
    */
   subtractVagas(refeicao: any): firebase.Promise<any>{ 
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
@@ -102,4 +110,17 @@ export class RefeicaoService {
   }
 
 
+   /**
+    * Coloca o usuário na fila de espera da refeição
+    * @param refeicao A refeição a ser manipulada
+   */
+  queue(refeicao: any): Promise<any>{
+    //TODO: verificar se precisa fazer distinção de usuários (default e veg) na fila de espera.
+    
+    //Promise para adicionar o usuário na fila da refeição.
+    const refeicaoQueue = firebase.database().ref('refeicoes/'+ refeicao.$key+ '/queue').child(this._auth.uid).set(true);
+    const userQueue = this._user.addToQueue(refeicao);
+
+    return Promise.all([refeicaoQueue, userQueue]);
+  }
 }
