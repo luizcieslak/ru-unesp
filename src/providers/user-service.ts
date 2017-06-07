@@ -33,20 +33,18 @@ export class UserService {
 
   /**
    * Pega a referência do usuário no banco de dados.
-   * @argument {string} uid id do usuário
    * @returns Observable.
    */
-  userObservable(uid: string): FirebaseObjectObservable<any>{
-    return this.afDB.object('users/'+uid);
+  userObservable(): FirebaseObjectObservable<any>{
+    return this.afDB.object('users/'+ this._auth.uid);
   }
 
   /**
    * Tira uma unidade do saldo do usuário
    * @returns Promise
-   * @argument {string} uid id do usuário
    */
-  debitSaldo(uid: string): firebase.Promise<any> {
-    return firebase.database().ref('/users/'+ uid + '/saldo')
+  debitSaldo(): firebase.Promise<any> {
+    return firebase.database().ref('/users/'+ this._auth.uid + '/saldo')
       .transaction( saldo => { return saldo - 1; });
   }
 
@@ -56,10 +54,10 @@ export class UserService {
    * @argument {any} refeicao Refeição a ser analisada
    * @returns {true} Se já comprou.
    */
-  bought(uid: string, refeicao: any): boolean {
+  bought(refeicao: any): boolean {
     let bought: boolean;
     
-    const userRefeicoes = firebase.database().ref('users/'+ uid +'/refeicoes');
+    const userRefeicoes = firebase.database().ref('users/'+ this._auth.uid +'/refeicoes');
     userRefeicoes.child(refeicao.$key).once('value', snapshot => {
       bought = snapshot.val() !== null;
     })
@@ -69,8 +67,8 @@ export class UserService {
   /**
    * Promise que adiciona o id da refeição no documento do usuário.
    */
-  addRefeicao(refeicao: any, uid: string): firebase.Promise<any> {
-    return firebase.database().ref('users/'+ uid +'/refeicoes')
+  addRefeicao(refeicao: any): firebase.Promise<any> {
+    return firebase.database().ref('users/'+ this._auth.uid +'/refeicoes')
       .child(refeicao.$key).set(true); //nao esta na lista
   }
 

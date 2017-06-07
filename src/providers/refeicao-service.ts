@@ -13,7 +13,7 @@ import * as firebase from 'firebase/app';
 export class RefeicaoService {
 
   constructor(private db: AngularFireDatabase, private time: TimeService,
-  private _user: UserService) {
+  private _user: UserService, private _auth: AuthService) {
   }
 
   nextRefeicoes(): FirebaseListObservable<any>{
@@ -30,7 +30,7 @@ export class RefeicaoService {
  /**
    * Realizar a compra da refeição.
   */
-  book(refeicao: any, uid: string, isVeg: boolean): Promise<any>{
+  book(refeicao: any, isVeg: boolean): Promise<any>{
     // this._user.debitSaldo(uid)
     //   .then(_ => {                    
     //      this.incrementCount(refeicao,isVeg)
@@ -50,16 +50,16 @@ export class RefeicaoService {
     //         .catch(error => console.log('Error in count() ',error));
     //   })
     //   .catch(error => console.log('Error in saldo() ',error));   
-    const debitSaldo = this._user.debitSaldo(uid);
+    const debitSaldo = this._user.debitSaldo();
     const incrementCount = this.incrementCount(refeicao, isVeg);
     const vagas = this.subtractVagas(refeicao);
-    const addRefeicaoToUser = this._user.addRefeicao(refeicao, uid);
-    const addUserToRefeicao = this.addUser(refeicao, uid, isVeg);
+    const addRefeicaoToUser = this._user.addRefeicao(refeicao);
+    const addUserToRefeicao = this.addUser(refeicao, isVeg);
 
     return Promise.all([debitSaldo, incrementCount, vagas, addRefeicaoToUser, addUserToRefeicao]);
   }
 
-  addUser(refeicao: any, uid: string, isVeg: boolean): firebase.Promise<any>{
+  addUser(refeicao: any, isVeg: boolean): firebase.Promise<any>{
     let userList;
     if(isVeg){
       userList = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/usersVeg');
@@ -73,7 +73,7 @@ export class RefeicaoService {
     //})
 
     //Adicionar o usuário direto, nesse ponto já se sabe que o usuário não está na lista
-    return userList.child(uid).set(true);
+    return userList.child(this._auth.uid).set(true);
   }
 
   /**

@@ -53,10 +53,10 @@ export class RefeicaoDetailPage {
     
 
     this.refeicaoParams = this.navParams.get('refeicao');
-    this.userObservable = this._user.userObservable(auth.uid);
+    this.userObservable = this._user.userObservable();
 
     //verificar se o usuário já comprou esta refeição
-    this.bought = this._user.bought(this.auth.uid,this.refeicaoParams);
+    this.bought = this._user.bought(this.refeicaoParams);
 
     //verificar se esta dentro do tempo permitido
     this.isAllowed = _time.isAllowed(this.refeicaoParams.timestamp);
@@ -123,7 +123,7 @@ export class RefeicaoDetailPage {
   }
 
   book(): void{
-    this._refeicao.book(this.refeicaoParams, this.auth.uid, this.isVeg)
+    this._refeicao.book(this.refeicaoParams, this.isVeg)
       .then(_ => {
         //Mostrar mensagem de confirmação.
         //Não seria melhor um toast?
