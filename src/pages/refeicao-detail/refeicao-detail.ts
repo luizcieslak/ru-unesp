@@ -14,9 +14,7 @@ import * as firebase from 'firebase/app';
 import { HomePage } from '../home/home';
 
 import { UserService } from '../../providers/user-service';
-import { AuthService } from '../../providers/auth-service';
 import { RefeicaoService } from '../../providers/refeicao-service';
-import { TimeService } from '../../providers/time-service';
 
 @Component({
   selector: 'page-refeicao-detail',
@@ -25,79 +23,56 @@ import { TimeService } from '../../providers/time-service';
 export class RefeicaoDetailPage {
 
   buttonMsg = 'Reservar';
+  buttonQueueMsg = 'Entrar na fila de espera';
 
   loading: Loading; //loading component.
 
   refeicaoParams: any; //refeicao sent via NavParams
-  vagasCount: Number; //número de vagas da refeição
-
-  //variáveis do usuário
-  userObservable: FirebaseObjectObservable<any>;
-  userSaldo: Number;
-  isVeg: boolean; 
-  bought: boolean;
-  isAllowed: boolean;
 
   canBuy: boolean; //Variável que guarda se o usuário pode comprar esta refeição. (usada no botão)
   canQueue: boolean; //Variável que guarda se o usuário pode entrar na fila de espera. (usada no botão)
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
-    private auth: AuthService, public afDB:AngularFireDatabase,
-    public alertCtrl: AlertController, public loadingCtrl: LoadingController,
-    public toastCtrl: ToastController, public _user: UserService,
-    public _refeicao: RefeicaoService, public _time: TimeService) {
+    public afDB:AngularFireDatabase, public alertCtrl: AlertController, 
+    public loadingCtrl: LoadingController, public toastCtrl: ToastController, 
+    public _user: UserService, public _refeicao: RefeicaoService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
     
-
+    //Pegar a refeição enviada por NavParams
     this.refeicaoParams = this.navParams.get('refeicao');
-    this.userObservable = this._user.userObservable();
 
-    //verificar se o usuário já comprou esta refeição
-    this.bought = this._user.bought(this.refeicaoParams);
+    //iniciar as variaveis canBuy e canQueue
+    const obs1 = this._user.canBuy(this.refeicaoParams);
+    obs1.subscribe(result =>{
+      console.log('canBuy?', result);
+      //Se result for uma string, então ocorreu algum problema
+      if (typeof result === 'string' || result instanceof String){
+        this.canBuy = false;
+        this.buttonMsg = result as string;
+      }else{
+        this.canBuy = result;
+      }
 
-    //verificar se esta dentro do tempo permitido
-    this.isAllowed = _time.isAllowed(this.refeicaoParams.timestamp);
+      const obs2 = this._user.canQueue(this.refeicaoParams);
+      obs2.subscribe(result => {
+        console.log('canQueue?', result);
+        //Se result for uma string, então ocorreu algum problema
+        if (typeof result === 'string' || result instanceof String){
+          this.canQueue = false;
+          this.buttonQueueMsg = result as string;
+        //Se canBuy = true, canQueue = false
+        }else{
+          this.canQueue = result;
+        }
 
-    this.userObservable.subscribe( user => { 
-      //Carregar as informações do usuário.
-      this.isVeg = user.veg;
-      this.userSaldo = user.saldo;
+        //Dispensar o Loadind Component
+        this.loading.dismiss();
+      })
 
-      //Carregar a informação do número de vagas.
-      let refeicaoObservable = this.afDB.object('/refeicoes/'+ this.refeicaoParams.$key);
-      refeicaoObservable.subscribe( refeicao => {
-        this.vagasCount = refeicao.vagas;
-
-        //após tudo carregado, mostrar a mensagem no botão
-        if(this.vagasCount == 0) this.buttonMsg = 'Sem vagas!';
-        else if(!this.isAllowed) this.buttonMsg = 'Tempo esgotado!';
-        else if(this.userSaldo == 0) this.buttonMsg = 'Sem saldo!';
-        else if(this.bought) this.buttonMsg = 'Já comprou!';
-
-        //iniciar as variaveis canBuy e canQueue
-        const obs1 = this._user.canBuy(this.refeicaoParams);
-        obs1.subscribe(result =>{
-          console.log('canBuy?', result);
-          this.canBuy = result;
-
-          const obs2 = this._user.canQueue(this.refeicaoParams);
-          obs2.subscribe(result => {
-            console.log('canQueue?', result);
-            this.canQueue = result;
-
-            //Dispensar o Loadind Component
-            this.loading.dismiss();
-          })
-
-        })
-        
-
-      });
-
-    });
+    })
   }
 
   ionViewDidLoad() {
@@ -127,7 +102,9 @@ export class RefeicaoDetailPage {
   }
 
   book(): void{
-    this._refeicao.book(this.refeicaoParams, this.isVeg)
+    let o1 = this._user.userObservable();
+    o1.subscribe(user => {
+      this._refeicao.book(this.refeicaoParams, user.veg)
       .then(_ => {
         //Mostrar mensagem de confirmação.
         //Não seria melhor um toast?
@@ -144,6 +121,8 @@ export class RefeicaoDetailPage {
         alert.present();
       })
       .catch(error => console.log('error in book()',error));
+    })
+
   }
 
    /**

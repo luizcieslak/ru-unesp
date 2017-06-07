@@ -44,10 +44,22 @@ export class UserService {
     return this.afDB.object('users/'+ this._auth.uid);
   }
 
+  /**
+   * Retorna o saldo do usuário logado.
+   */
   getSaldo(): firebase.Promise<any>{
     return firebase.database().ref('users/'+ this._auth.uid +'/saldo').transaction(saldo => saldo);
   }
 
+  /**
+   * Verifica se o usuário pode comprar a refeição.
+   * 
+   * Itens verificados:
+   * - Vagas da refeição > 0
+   * - Saldo do usuário > 0
+   * - Usuário não comprou a refeição
+   * - Está dentro do tempo estipulado.
+   */
   canBuy(refeicao: any): Rx.Observable<any>{
     let subject = new Rx.Subject<any>();
 
@@ -62,18 +74,38 @@ export class UserService {
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
-        if(vagas > 0 && saldo > 0 && !this.bought(refeicao) && this._time.isAllowed(refeicao.timestamp)){
-          subject.next(true);
-          subject.complete();
-        }else{
-          subject.next(false);
-        }
+        //Verificar se as condições são verdadeiras
+        if(vagas > 0)
+          if(saldo > 0)
+            if(!this.bought(refeicao))
+              if(this._time.isAllowed(refeicao.timestamp)){
+                subject.next(true);
+                subject.complete();
+              }
+              else
+                subject.next('Tempo esgotado!');
+            else
+              subject.next('Já comprou!');
+          else
+            subject.next('Sem saldo!');
+        else
+          subject.next('Sem vagas!');
+        
       })
       .catch(error => console.log('error in UserService canBuy()', error));
     
     return subject;
   }
 
+  /**
+   * Verifica se o usuário pode comprar entrar na fila da refeição
+   * 
+   * Itens verificados:
+   * - Vagas da refeição == 0
+   * - Saldo do usuário > 0
+   * - Usuário não está na fila
+   * - Está dentro do tempo estipulado.
+   */
   canQueue(refeicao: any): Rx.Observable<any>{
     let subject = new Rx.Subject<any>();
 
@@ -88,13 +120,20 @@ export class UserService {
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
-        if(vagas == 0 && saldo > 0 && !this.isQueued(refeicao) && this._time.isAllowed(refeicao.timestamp)){
-          //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
-          subject.next(true);
-          subject.complete();
-        }else{
-          subject.next(false);
-        }
+
+        //Verificar se as condições são verdadeiras
+        if(vagas == 0)
+          if(saldo > 0)
+            if(!this.isQueued(refeicao))
+              if(this._time.isAllowed(refeicao.timestamp)){
+                //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
+                subject.next(true);
+                subject.complete();
+              }
+              else subject.next('Tempo esgotado para entrar na fila!');
+            else subject.next('Já entrou na fila!');
+          else subject.next('Sem saldo!');
+        else subject.next(false);
       })
       .catch(error => console.log('error in UserService canBuy()', error));
     

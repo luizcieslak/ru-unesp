@@ -25,5 +25,5 @@
   <h3><b>Suco: </b> {{refeicaoParams.suco}}</h3>
 
   <button ion-button (click)="confirmBook()" block [color]="canBuy? '' : 'danger'" [disabled]="!canBuy">{{ buttonMsg }}</button>
-  <button ion-button block color="secondary" *ngIf="canQueue" (click)="confirmQueue()">Entrar na fila de espera.</button>
+  <button ion-button block color="secondary" *ngIf="canQueue" (click)="confirmQueue()">{{ buttonQueueMsg }}</button>
 </ion-content>
