@@ -44,6 +44,10 @@ export class RefeicaoDetailPage {
     //Pegar a refeição enviada por NavParams
     this.refeicaoParams = this.navParams.get('refeicao');
 
+    this._refeicao.subtractVagas(this.refeicaoParams)
+      .then(result => console.log(result))
+      .catch(error => console.error(error));
+
     //iniciar as variaveis canBuy e canQueue
     const obs1 = this._user.canBuy(this.refeicaoParams);
     obs1.subscribe(result =>{
@@ -120,7 +124,14 @@ export class RefeicaoDetailPage {
         });
         alert.present();
       })
-      .catch(error => console.log('error in book()',error));
+      .catch(reason => {
+        let alert = this.alertCtrl.create({
+          title: 'Erro',
+          subTitle: reason.message,
+          buttons: ['OK']
+        })
+        alert.present();
+      });
     })
 
   }

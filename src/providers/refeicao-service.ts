@@ -40,13 +40,18 @@ export class RefeicaoService {
   */
   book(refeicao: any, isVeg: boolean): Promise<any>{
 
-    const debitSaldo = this._user.debitSaldo();
-    const incrementCount = this.incrementCount(refeicao, isVeg);
-    const vagas = this.subtractVagas(refeicao);
-    const addRefeicaoToUser = this._user.addRefeicao(refeicao);
-    const addUserToRefeicao = this.addUser(refeicao, isVeg);
+    if(this._user.canBuy(refeicao)){
+      const debitSaldo = this._user.debitSaldo();
+      const incrementCount = this.incrementCount(refeicao, isVeg);
+      const vagas = this.subtractVagas(refeicao);
+      const addRefeicaoToUser = this._user.addRefeicao(refeicao);
+      const addUserToRefeicao = this.addUser(refeicao, isVeg);
+      return Promise.all([debitSaldo, incrementCount, vagas, addRefeicaoToUser, addUserToRefeicao]);
+    }else{
+      return Promise.reject('canBuy() false');
+    }
 
-    return Promise.all([debitSaldo, incrementCount, vagas, addRefeicaoToUser, addUserToRefeicao]);
+
   }
 
   /**
@@ -102,7 +107,7 @@ export class RefeicaoService {
     return firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas')
               .transaction( vagas => {
                 if(vagas>0) return vagas - 1;
-                else return vagas;
+                else throw new Error('sem vagas');
               });
   }
 
