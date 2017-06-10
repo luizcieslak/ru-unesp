@@ -16,7 +16,7 @@
 
 <ion-content padding>
 
-<ion-card *ngFor="let r of refeicoes | async">
+<ion-card *ngFor="let r of (refeicoes | async) ; let i = index">
   <img src="img/ru.png"/>
   <ion-card-content>
     <ion-card-title>
@@ -28,8 +28,8 @@
   </ion-card-content>
   <ion-row>
     <ion-col center text-center>
-      <span *ngIf="r.isAllowed">{{r.vagas}} vagas. Reserva acaba em {{r. timestamp | fromNow }}</span>
-      <span *ngIf="!r.isAllowed">Tempo esgotado</span>
+      <span *ngIf="reserva[i]">{{r.vagas}} vagas. Reserva acaba em {{r. timestamp | fromNow }}</span>
+      <span *ngIf="!reserva[i]">Tempo esgotado </span>
     </ion-col>
     <ion-col>
       <button ion-button icon-left clear small (click)="gotoDetails(r)">
