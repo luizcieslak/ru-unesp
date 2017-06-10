@@ -20,6 +20,7 @@ export class RefeicaoListPage {
 
   refeicoes: FirebaseListObservable<any>; //refeicoes array.
   loading: Loading;                       //loading component.
+  reserva: Array<boolean> = []; 
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public loadingCtrl: LoadingController, public afDB: AngularFireDatabase,
@@ -34,9 +35,9 @@ export class RefeicaoListPage {
 
       //Assim que os dados forem carregados, fechar o loading component.
       this.refeicoes.subscribe( snapshots => {
-        snapshots.forEach(snapshot => {
-          snapshot.isAllowed = this.time.isAllowed(snapshot.timestamp);
-          console.log(moment(snapshot.timestamp).format('LLLL'), snapshot.isAllowed);
+        snapshots.forEach( (snapshot,index)  => {
+          this.reserva[index] = this.time.isAllowed(snapshot.timestamp);
+          console.log(moment(snapshot.timestamp).format('LLLL'), this.reserva[index]);
         });
         this.loading.dismiss();
       });

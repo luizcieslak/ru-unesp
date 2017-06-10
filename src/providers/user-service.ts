@@ -51,6 +51,10 @@ export class UserService {
     return firebase.database().ref('users/'+ this._auth.uid +'/saldo').transaction(saldo => saldo);
   }
 
+  isVeg(): firebase.Promise<any>{
+    return firebase.database().ref('users/'+this._auth.uid+'/veg').once('value');
+  }
+
   /**
    * Verifica se o usuário pode comprar a refeição.
    * 
@@ -65,7 +69,8 @@ export class UserService {
 
     let vagas: Number;
     let saldo: Number;
-    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
+    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(
+      vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
 
     Promise.all([p1,p2])
@@ -190,7 +195,17 @@ export class UserService {
    * @param refeicao A refeição a ser adicionada.
    */
   addToQueue(refeicao: any): firebase.Promise<any>{
-    return firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(true);
+    return Promise.all([
+      firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(true),
+      this.debitSaldo() ]);
+  }
+
+  removeRefeicao(refeicao: any): firebase.Promise<any>{
+    return firebase.database().ref('users/' + this._auth.uid + '/refeicoes/'+ refeicao.$key).remove();
+  }
+
+  removeQueue(refeicao: any): firebase.Promise<any>{
+    return firebase.database().ref('users/' + this._auth.uid + '/queue/'+ refeicao.$key).remove();
   }
 
 }

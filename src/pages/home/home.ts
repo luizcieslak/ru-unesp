@@ -26,6 +26,7 @@ export class HomePage {
   shownGroup = null; //Variável para a accordion list.
 
   user: FirebaseObjectObservable<any>;
+  isVeg: boolean;
   refeicoesKey: Array<any>;
   refeicoes: Array<any> = [];
 
@@ -34,15 +35,18 @@ export class HomePage {
 
   constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
-  public alertCtrl: AlertController, public time: TimeService, public refeicao: RefeicaoService) {
+  public alertCtrl: AlertController, public time: TimeService, public _refeicao: RefeicaoService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
+
+    
     
     //Observable do Usuário
     this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);
     this.user.subscribe( user =>{
+      this.isVeg = user.veg;
       if(user.refeicoes){
         //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
         this.refeicoesKey = Object.keys(user.refeicoes); 
@@ -54,8 +58,10 @@ export class HomePage {
             this.refeicoes.push(refeicao); //e dar um push para o array.
           })
         })
-
-        //repetir o mesmo processo para as refeições na lista de espera
+      }
+      
+      //repetir o mesmo processo para as refeições na lista de espera
+      if(user.queue){
         this.queueKey = Object.keys(user.queue);
         this.queueKey.forEach(key => {
           let refeicaoObservable = this.afDB.object('/refeicoes/'+ key);
@@ -114,40 +120,26 @@ export class HomePage {
    * Remove o usuário da refeição, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
-  remove(refeicao: any){
-    console.log('refeicao key', refeicao.$key);
-    //verificar se está dentro do tempo
-    if(this.time.isAllowed(refeicao.timestamp)){
-      //Remover o usuário da refeição
-      const refeicaoUsers = this.afDB.list('/refeicoes/'+ refeicao.$key +'/users');
-
-      //Remover a refeição do usuário
-      const userRefeicoes = this.afDB.list('/users/'+this.afAuth.auth.currentUser.uid+'/refeicoes/');
-
-      //Adicionar uma vaga na refeicao
-      const vagas = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/vagas').transaction(vagas => vagas + 1);
-
-      refeicaoUsers.subscribe(_ => {
-        refeicaoUsers.remove(this.afAuth.auth.currentUser.uid);
-
-        userRefeicoes.subscribe(_ => {
-          userRefeicoes.remove(refeicao.$key);
-          vagas
-            .then(_ => console.log('remove sucessfull'))
-            .catch(error => console.log('error in remove()',error));
+  remove(refeicao: any): void{
+    this._refeicao.remove(refeicao, this.isVeg)
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+          title: 'Sucesso',
+          subTitle: 'Você removeu a refeição. Seu saldo será reembolsado.',
+          buttons: ['OK']
         });
-
+        alert.present();
+      })
+      .catch(reason => {
+        if(!reason){
+          let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+          alert.present();
+        }
       });
-
-      
-    }else{
-      let alert = this.alertCtrl.create({
-        title: 'Tempo Esgotado',
-        subTitle: 'O tempo para realizar esta operação está esgotado.',
-        buttons: ['OK']
-      });
-      alert.present();
-    }
   }
 
   /**
@@ -163,16 +155,17 @@ export class HomePage {
     choose.addButton({
       text: 'OK',
       handler: data => {
-        this.transfer(refeicao, data)
+        this.transfer(refeicao, data);
+        choose.dismiss();
       }
     });
 
-    const observable = this.refeicao.nextRefeicoes();
+    const observable = this._refeicao.nextRefeicoes();
     observable.subscribe( refeicoes => {
       refeicoes.forEach( refeicao => {
         choose.addInput({
           type: 'radio',
-          label: moment(refeicao.timestamp).calendar(),
+          label: refeicao.$key + ' ' + moment(refeicao.timestamp).calendar(),
           value: refeicao.$key,
         });
       })
@@ -186,7 +179,25 @@ export class HomePage {
    * @param {string} dest A chave da refeição de destino.
    */
   transfer(refeicao: any, dest: string){
+    this._refeicao.transfer(refeicao, { "timestamp": dest }, this.isVeg )
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+            title: 'Sucesso',
+            subTitle: 'Transferência realizada.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
+      .catch(reason => {
+        let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
 
+    
   }
 
   confirmRemoveQueue(refeicao: any){
@@ -210,29 +221,25 @@ export class HomePage {
 
   /**
    * Remove o usuário da fila, reembolsando-o.
-   * @param {any} refeicao A refeição selecionada.
    */
   removeQueue(refeicao: any){
-    //Remover o usuário da refeição
-    const refeicaoQueue = this.afDB.list('/refeicoes/'+ refeicao.$key +'/queue');
-
-    //Remover a refeição do usuário
-    const userQueue = this.afDB.list('/users/'+this.afAuth.auth.currentUser.uid+'/queue/');
-
-    //decrementar o contador da fila
-    const queueCount = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/queue_count').transaction(queue => queue - 1);
-
-    refeicaoQueue.subscribe(_ => {
-       refeicaoQueue.remove(this.afAuth.auth.currentUser.uid);
-
-      userQueue.subscribe(_ => {
-        userQueue.remove(refeicao.$key);
-        queueCount
-          .then(_ => console.log('remove sucessfull'))
-          .catch(error => console.log('error in removeQueue()',error));
-        });
+    this._refeicao.removeQueue(refeicao)
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+            title: 'Sucesso',
+            subTitle: 'Operação realizada com sucesso.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
+      .catch(reason =>{
+        let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+        alert.present();
       });
   }
-
 
 }

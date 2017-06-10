@@ -18,7 +18,7 @@ export class RefeicaoService {
 
   nextRefeicoes(): FirebaseListObservable<any>{
     const now = this.time.localTimestamp();
-
+    console.log('nextREfeicoes()');
     return this.db.list('/refeicoes',{
       query:{
           orderByChild: 'timestamp',
@@ -35,10 +35,9 @@ export class RefeicaoService {
     return this.db.object('refeicoes/'+ key);
   }
 
- /**
-   * Realizar a compra da refeição.
-  */
+
   book(refeicao: any, isVeg: boolean): Promise<any>{
+    console.log('book()');
 
     if(this._user.canBuy(refeicao)){
       const debitSaldo = this._user.debitSaldo();
@@ -102,15 +101,17 @@ export class RefeicaoService {
    * Decrementa o número de vagas da refeição. (vagas = users_count - usersVeg_count)
    * @param refeicao A refeição a ser manipulada
    */
-  subtractVagas(refeicao: any): firebase.Promise<any>{ 
-    //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
-    return firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas')
-              .transaction( vagas => {
-                if(vagas>0) return vagas - 1;
-                else throw new Error('sem vagas');
-              });
-  }
 
+  subtractVagas(refeicao: any): firebase.Promise<any>{  
+    //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga 
+    console.log('subtractVagas()');
+    return firebase.database().ref('/refeicoes/'+ refeicao.$key +'/vagas') 
+              .transaction( vagas => { 
+                console.log(vagas)
+                if(vagas > 0) return vagas - 1; 
+                else return vagas; 
+              }); 
+  } 
 
    /**
     * Coloca o usuário na fila de espera da refeição
@@ -121,8 +122,95 @@ export class RefeicaoService {
     
     //Promise para adicionar o usuário na fila da refeição.
     const refeicaoQueue = firebase.database().ref('refeicoes/'+ refeicao.$key+ '/queue').child(this._auth.uid).set(true);
+    const queueCount = firebase.database().ref('refeicoes/'+ refeicao.$key+ '/queue_count').transaction(count => count + 1);
     const userQueue = this._user.addToQueue(refeicao);
 
-    return Promise.all([refeicaoQueue, userQueue]);
+    return Promise.all([refeicaoQueue, queueCount, userQueue]);
+  }
+
+  /**
+   * Remove o usuário da lista da refeição, diminuindo o contador.
+   * @param refeicao A refeição a ser manipulada
+   * @param {booelan} isVeg Usuário vegetariano
+   */
+  removeUser(refeicao: any, isVeg: boolean): firebase.Promise<any>{
+    return isVeg ? 
+      Promise.all([
+        firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg/'+ this._auth.uid).remove(),
+        firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg_count/').transaction(count => count - 1) ])
+      :
+      Promise.all([
+        firebase.database().ref('/refeicoes/' + refeicao.$key + '/users/'+ this._auth.uid ).remove(),
+        firebase.database().ref('/refeicoes/' + refeicao.$key + '/users_count/').transaction(count => count - 1) ])
+      
+  }
+
+  /**
+   * Remove o usuário da refeição, reembolsando-o.
+   * @param {any} refeicao A refeição selecionada.
+   */
+  remove(refeicao: any, isVeg: boolean): firebase.Promise<any>{
+
+    //verificar se está dentro do tempo
+    if(this.time.isAllowed(refeicao.timestamp)){
+
+      //Adicionar uma vaga na refeicao
+      const vagas = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/vagas').transaction(vagas => vagas + 1);
+      const removeRefeicao = this._user.removeRefeicao(refeicao);
+      const removeUser = this.removeUser(refeicao, isVeg);
+
+      return Promise.all([vagas, removeRefeicao, removeUser]);
+    }
+    return Promise.reject(false);
+  }
+
+  /**
+   * Remove o usuário da fila de espera da refeição, reembolsando-o.
+   * @param {any} refeicao A refeição selecionada.
+   */
+  removeQueue(refeicao: any): firebase.Promise<any>{
+    //Remover o usuário da da fila
+    const removeUser = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/queue/'+ this._auth.uid).remove();
+
+    //decrementar o contador da fila
+    const queueCount = firebase.database().ref('/refeicoes/'+ refeicao.$key +'/queue_count').transaction(queue => queue - 1);
+
+    //Remover a refeição do usuário
+    const removeQueue = this._user.removeQueue(refeicao);
+
+    return this.time.isAllowed?
+      Promise.all([removeUser, queueCount, removeQueue]) :
+      Promise.reject('not allowed');
+  }
+
+
+  /**
+   * Tenta transferir a vaga do usuário entre uma refeição e outra.
+   * @param {any} refeicao A refeição de origem.
+   * @param {string} destKey A chave da refeição de destino.
+   */
+  transfer(refeicao: any, dest: any, isVeg: boolean): firebase.Promise<any>{
+    //Observable da refeicao origem.
+    const refeicaoUsers = this.db.list('/refeicoes/'+ refeicao.$key +'/users');
+
+    //Observable da lista de refeicoes do usuario.
+    const userRefeicoes = this.db.list('/users/'+this._auth.uid+'/refeicoes/');
+
+    //verificar se a refeicao destino tem vagas.
+    // const vagas = firebase.database().ref('/refeicoes/'+ dest +'/vagas').transaction(
+    //   vagas => {
+    //     if(vagas > 0) return vagas = vagas - -1;
+    //     else return Promise.reject('Sem vagas');
+    //   }
+    // );
+
+    const removeUser = this.removeUser(refeicao, isVeg);
+    const canBuy = this._user.canBuy(dest);
+    const book = this.book(dest, isVeg);
+
+    
+    return canBuy?
+      Promise.all([removeUser, book]) :
+      Promise.reject(false);
   }
 }

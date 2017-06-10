@@ -45,8 +45,8 @@ export class RefeicaoDetailPage {
     this.refeicaoParams = this.navParams.get('refeicao');
 
     this._refeicao.subtractVagas(this.refeicaoParams)
-      .then(result => console.log(result))
-      .catch(error => console.error(error));
+      .then(ok => console.log(ok))
+      .catch(reason => console.log('error',reason));
 
     //iniciar as variaveis canBuy e canQueue
     const obs1 = this._user.canBuy(this.refeicaoParams);
@@ -106,34 +106,33 @@ export class RefeicaoDetailPage {
   }
 
   book(): void{
-    let o1 = this._user.userObservable();
-    o1.subscribe(user => {
-      this._refeicao.book(this.refeicaoParams, user.veg)
-      .then(_ => {
-        //Mostrar mensagem de confirmação.
-        //Não seria melhor um toast?
-        let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
-              title: 'Sucesso',
-              subTitle: 'Compra realizada com sucesso!',
-              buttons: [{ 
-                text: 'OK',
-                handler: _ => {
-                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
-                }
-              }]
-        });
-        alert.present();
+    this._user.isVeg()
+      .then(snapshot =>{
+        this._refeicao.book(this.refeicaoParams, snapshot.val())
+          .then(_ => {
+            //Mostrar mensagem de confirmação.
+            //Não seria melhor um toast?
+            let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
+                  title: 'Sucesso',
+                  subTitle: 'Compra realizada com sucesso!',
+                  buttons: [{ 
+                    text: 'OK',
+                    handler: _ => {
+                      this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                    }
+                  }]
+            });
+            alert.present();
+          })
+          .catch(reason => {
+            let alert = this.alertCtrl.create({
+              title: 'Erro',
+              subTitle: reason.message,
+              buttons: ['OK']
+            })
+            alert.present();
+          });
       })
-      .catch(reason => {
-        let alert = this.alertCtrl.create({
-          title: 'Erro',
-          subTitle: reason.message,
-          buttons: ['OK']
-        })
-        alert.present();
-      });
-    })
-
   }
 
    /**
