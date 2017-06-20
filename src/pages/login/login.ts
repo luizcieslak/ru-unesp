@@ -10,6 +10,9 @@ import { SignupPage } from '../signup/signup';
 //new imports
 import { AngularFireAuth } from 'angularfire2/auth';
 
+import { Observable, Subject, BehaviorSubject } from "rxjs/Rx";
+import { AuthInfo } from "../../auth-info";
+
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html'
@@ -24,7 +27,8 @@ export class LoginPage {
 
   //String variable that stores the server error in a failed signin.
   private loginError: string;
-  
+
+ 
   constructor(public navCtrl: NavController, public navParams: NavParams, 
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
     public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
@@ -35,7 +39,12 @@ export class LoginPage {
         password: ['', Validators.required]
       });
 
+
       //TODO: Persistir login do usuário
+      afAuth.authState.subscribe(auth => {
+        auth === null? console.log('no auth') : this.navCtrl.setRoot(HomePage);
+      })
+      
   }
 
   ionViewDidLoad() {

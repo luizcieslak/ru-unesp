@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/map';
 
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
@@ -12,7 +11,7 @@ export class AuthService {
 
   displayName: string;
 
-  constructor(public afAuth: AngularFireAuth) {
+  constructor(private afAuth: AngularFireAuth) {
     afAuth.authState.subscribe(user => {
       if (!user) {
         this.displayName = null;        
@@ -35,13 +34,6 @@ export class AuthService {
   get uid(): string{
     return this.afAuth.authState !== null? this.afAuth.auth.currentUser.uid : null;
   }
-
-  // signInWithFacebook(): firebase.Promise<FirebaseAuthState>{
-  //   return this.auth$.login({
-  //     provider: AuthProviders.Facebook,
-  //     method: AuthMethods.Popup
-  //   })
-  // }
 
   /**
    * Sign in into Firebase using Email.

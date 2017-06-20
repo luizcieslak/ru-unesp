@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading, ActionSheetController } from 'ionic-angular';
+import { NavController, LoadingController, Loading, AlertController } from 'ionic-angular';
 
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
@@ -7,6 +7,14 @@ import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/data
 //moment.js library for handling timestamps
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
+
+import { TimeService } from '../../providers/time-service';
+import { RefeicaoService } from '../../providers/refeicao-service';
+
+//import firebase namespace for functions that aren't in AngularFire2
+import * as firebase from 'firebase/app';
+
+import * as Rx from 'rxjs/Rx';
 
 @Component({
   selector: 'page-home',
@@ -18,25 +26,47 @@ export class HomePage {
   shownGroup = null; //Variável para a accordion list.
 
   user: FirebaseObjectObservable<any>;
+  isVeg: boolean;
   refeicoesKey: Array<any>;
   refeicoes: Array<any> = [];
 
+  queueKey: Array<any>;
+  queueRefeicoes: Array<any> = [];
+
   constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
-  public actionSheetCtrl: ActionSheetController) {
+  public alertCtrl: AlertController, public time: TimeService, public _refeicao: RefeicaoService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
+
     
-    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid); //pegar o usuário
-    this.user.subscribe( user =>{ //depois de carregado, 
+    
+    //Observable do Usuário
+    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);
+    this.user.subscribe( user =>{
+      this.isVeg = user.veg;
       if(user.refeicoes){
-        this.refeicoesKey = Object.keys(user.refeicoes); //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
+        //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
+        this.refeicoesKey = Object.keys(user.refeicoes); 
+        //Resetar o array caso haja alguma atualização.
+        this.refeicoes = [];
         this.refeicoesKey.forEach(key => { //então, para cada chave
           let refeicaoObservable = this.afDB.object('/refeicoes/'+ key); //pegar outras informações da refeição
           refeicaoObservable.subscribe(refeicao => {
             this.refeicoes.push(refeicao); //e dar um push para o array.
+          })
+        })
+      }
+      
+      //repetir o mesmo processo para as refeições na lista de espera
+      if(user.queue){
+        this.queueKey = Object.keys(user.queue);
+        this.queueKey.forEach(key => {
+          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key);
+          refeicaoObservable.subscribe(refeicao => {
+            this.queueRefeicoes.push(refeicao);
           })
         })
       }
@@ -67,22 +97,149 @@ export class HomePage {
       return this.shownGroup === group;
   };
 
+  confirmRemove(refeicao: any): void{
+    let confirm = this.alertCtrl.create({
+      title: 'Confirmar Desistência',
+      message: 'Tem certeza que deseja desistir desta refeição? Seu saldo será reembolsado.',
+      buttons: [
+        {
+          text: 'Cancelar',
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            this.remove(refeicao);
+          }
+        }
+      ]
+    });
+    confirm.present();
+  }
+
   /**
    * Remove o usuário da refeição, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
-  remove(refeicao: any){
-
+  remove(refeicao: any): void{
+    this._refeicao.remove(refeicao, this.isVeg)
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+          title: 'Sucesso',
+          subTitle: 'Você removeu a refeição. Seu saldo será reembolsado.',
+          buttons: ['OK']
+        });
+        alert.present();
+      })
+      .catch(reason => {
+        if(!reason){
+          let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+          alert.present();
+        }
+      });
   }
 
   /**
-   * Transfere a compra do usuário para outra refeição.
-   * @param {any} refeicao A refeição selecionada.
+   * Janela de confirmação da transferência de refeições, que mostra uma lista das próximas refeições
+   * @param refeicao refeição escolhida no DOM.
    */
-  transfer(refeicao: any){
+  confirmTransfer(refeicao: any): void{
+    let choose = this.alertCtrl.create();
+    choose.setTitle('Próximas refeições');
+    choose.setSubTitle('Escolha uma data para a transferência');
 
+    choose.addButton('Cancel');
+    choose.addButton({
+      text: 'OK',
+      handler: data => {
+        this.transfer(refeicao, data);
+        choose.dismiss();
+      }
+    });
+
+    const observable = this._refeicao.nextRefeicoes();
+    observable.subscribe( refeicoes => {
+      refeicoes.forEach( refeicao => {
+        choose.addInput({
+          type: 'radio',
+          label: refeicao.$key + ' ' + moment(refeicao.timestamp).calendar(),
+          value: refeicao.$key,
+        });
+      })
+      choose.present();
+    })
   }
 
+  /**
+   * Tenta transferir a vaga do usuário entre uma refeição e outra.
+   * @param {any} refeicao A refeição de origem.
+   * @param {string} dest A chave da refeição de destino.
+   */
+  transfer(refeicao: any, dest: string){
+    this._refeicao.transfer(refeicao, { "timestamp": dest }, this.isVeg )
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+            title: 'Sucesso',
+            subTitle: 'Transferência realizada.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
+      .catch(reason => {
+        let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
 
+    
+  }
+
+  confirmRemoveQueue(refeicao: any){
+    let confirm = this.alertCtrl.create({
+      title: 'Confirmar Desistência',
+      message: 'Tem certeza que deseja desistir desta fila? Seu saldo será reembolsado.',
+      buttons: [
+        {
+          text: 'Cancelar',
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            this.removeQueue(refeicao);
+          }
+        }
+      ]
+    });
+    confirm.present();
+  }
+
+  /**
+   * Remove o usuário da fila, reembolsando-o.
+   */
+  removeQueue(refeicao: any){
+    this._refeicao.removeQueue(refeicao)
+      .then(_ =>{
+        let alert = this.alertCtrl.create({
+            title: 'Sucesso',
+            subTitle: 'Operação realizada com sucesso.',
+            buttons: ['OK']
+          });
+        alert.present();
+      })
+      .catch(reason =>{
+        let alert = this.alertCtrl.create({
+            title: 'Erro',
+            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+            buttons: ['OK']
+          });
+        alert.present();
+      });
+  }
 
 }
