@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, LoadingController, Loading, AlertController } from 'ionic-angular';
 
-import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
 //moment.js library for handling timestamps
@@ -10,6 +9,9 @@ import 'moment/locale/pt-br';
 
 import { TimeService } from '../../providers/time-service';
 import { RefeicaoService } from '../../providers/refeicao-service';
+import { AuthService } from '../../providers/auth-service';
+import { UserService } from '../../providers/user-service';
+
 
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
@@ -33,18 +35,23 @@ export class HomePage {
   queueKey: Array<any>;
   queueRefeicoes: Array<any> = [];
 
-  constructor(public navCtrl: NavController, private afAuth: AngularFireAuth,
+  constructor(public navCtrl: NavController, private _auth: AuthService,
   public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
-  public alertCtrl: AlertController, public time: TimeService, public _refeicao: RefeicaoService) {
+  public alertCtrl: AlertController, public time: TimeService, 
+  public _refeicao: RefeicaoService, public _user: UserService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
-
     
+    let r: any = {};
+    r.$key = '11010';
+    const userRefeicoes = this._user.bought(r)
+        .then( result => console.log(result))
+        .catch( reason => console.log('err', reason));
     
     //Observable do Usuário
-    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);
+    this.user = this.afDB.object('/users/'+this._auth.uid);
     this.user.subscribe( user =>{
       this.isVeg = user.veg;
       if(user.refeicoes){

@@ -44,10 +44,6 @@ export class RefeicaoDetailPage {
     //Pegar a refeição enviada por NavParams
     this.refeicaoParams = this.navParams.get('refeicao');
 
-    this._refeicao.subtractVagas(this.refeicaoParams)
-      .then(ok => console.log(ok))
-      .catch(reason => console.log('error',reason));
-
     //iniciar as variaveis canBuy e canQueue
     const obs1 = this._user.canBuy(this.refeicaoParams);
     obs1.subscribe(result =>{

@@ -69,33 +69,35 @@ export class UserService {
 
     let vagas: Number;
     let saldo: Number;
+    let bought: boolean;
     const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(
       vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
+    const p3 = this.bought(refeicao);
 
-    Promise.all([p1,p2])
+    Promise.all([p1,p2,p3])
       .then(values =>{
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
+        bought = values[2];
         //Verificar se as condições são verdadeiras
         if(vagas > 0)
           if(saldo > 0)
-            if(!this.bought(refeicao))
+            if(!bought)
               if(this._time.isAllowed(refeicao.timestamp)){
                 subject.next(true);
                 subject.complete();
               }
               else
-                subject.next('Tempo esgotado!');
+                subject.next('Tempo esgotado');
             else
-              subject.next('Já comprou!');
+              subject.next('Comprado');
           else
-            subject.next('Sem saldo!');
+            subject.next('Sem saldo');
         else
-          subject.next('Sem vagas!');
-        
+          subject.next('Sem vagas');
       })
       .catch(error => console.log('error in UserService canBuy()', error));
     
@@ -116,35 +118,38 @@ export class UserService {
 
     let vagas: Number;
     let saldo: Number;
+    let isQueued: boolean;
     const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
+    const p3 = this.isQueued(refeicao);
 
-    Promise.all([p1,p2])
+    Promise.all([p1,p2,p3])
       .then(values =>{
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
+        isQueued = values[2];
 
         //Verificar se as condições são verdadeiras
         if(vagas == 0)
           if(saldo > 0)
-            if(!this.isQueued(refeicao))
+            if(!isQueued)
               if(this._time.isAllowed(refeicao.timestamp)){
                 //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
                 subject.next(true);
                 subject.complete();
               }
-              else subject.next('Tempo esgotado para entrar na fila!');
-            else subject.next('Já entrou na fila!');
-          else subject.next('Sem saldo!');
+              else subject.next('Tempo esgotado');
+            else subject.next('Entrou na fila');
+          else subject.next('Sem saldo');
         else subject.next(false);
       })
       .catch(error => console.log('error in UserService canBuy()', error));
     
     return subject;
   }
-
+  
   /**
    * Tira uma unidade do saldo do usuário
    * @returns Promise
@@ -160,14 +165,13 @@ export class UserService {
    * @argument {any} refeicao Refeição a ser analisada
    * @returns {true} Se já comprou.
    */
-  bought(refeicao: any): boolean {
-    let bought: boolean;
-    
-    const userRefeicoes = firebase.database().ref('users/'+ this._auth.uid +'/refeicoes');
-    userRefeicoes.child(refeicao.$key).once('value', snapshot => {
-      bought = snapshot.val() !== null;
-    })
-    return bought;
+  bought(refeicao: any): firebase.Promise<any> {
+    return new firebase.Promise((resolve, reject) => {
+      const p = firebase.database().ref('users/'+ this._auth.uid +'/refeicoes/' + refeicao.$key)
+        .once('value', snapshot => {
+            resolve(snapshot.val() !== null);
+        })
+    });
   }
 
   /**
@@ -181,13 +185,13 @@ export class UserService {
   /**
    * Verifica se o usuário já esta na fila de espera da refeição.
    */
-  isQueued(refeicao: any): boolean{
-    let queued: boolean;
-    const userQueue = firebase.database().ref('users/'+ this._auth.uid +'/queue');
-    userQueue.child(refeicao.$key).once('value', snapshot => {
-      queued = snapshot.val() !== null;
-    })
-    return queued;
+  isQueued(refeicao: any): firebase.Promise<any>{
+    return new firebase.Promise((resolve, reject) => {
+      const p = firebase.database().ref('users/'+ this._auth.uid +'/queue/' + refeicao.$key)
+        .once('value', snapshot => {
+            resolve(snapshot.val() !== null);
+        })
+    });
   }
 
   /**

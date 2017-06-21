@@ -22,23 +22,35 @@
   <img src="img/ru.png"/>
   <ion-card-content>
     <ion-card-title>
-      {{r. timestamp | format: 'LL'}}
+      {{r. timestamp | format: 'LL' }}
       </ion-card-title>
     <p>
       {{r.base1}}, {{r.base2}}, {{r.principal}} e {{r.veg}} (opcao vegetariana).
     </p>
   </ion-card-content>
-  <ion-row>
-    <ion-col center text-center>
-      <span *ngIf="reserva[i]">{{r.vagas}} vagas. Acaba em {{r. timestamp | fromNow }}</span> 
-      <span *ngIf="!reserva[i]">Tempo esgotado </span> 
-    </ion-col>
-    <ion-col>
-      <button ion-button icon-left clear small (click)="gotoDetails(r)">
-        <ion-icon name="information-circle"></ion-icon>
-      </button>
-    </ion-col>
-  </ion-row>
+  <ion-item>
+      <ion-icon item-start name="people" item-start style="color: #d03e84; padding-right: 8px"></ion-icon>
+      Vagas
+      <ion-badge item-right>{{ r.vagas }}</ion-badge>
+  </ion-item>
+  <button ion-item *ngIf="canBuy[i]" (click)="confirmBook(r)">
+      <ion-icon item-start name="cart" item-start style="color: #488aff; padding-right: 8px"></ion-icon>
+        Reservar
+  </button>
+  <button ion-item *ngIf="canQueue[i]" (click)="confirmQueue(r)">
+      <ion-icon item-start name="clock" item-start style="color: #488aff; padding-right: 8px"></ion-icon>
+        Entrar na fila de espera
+  </button>
+  <ion-item *ngIf="!(canBuy[i] || canQueue[i])">
+      <ion-icon item-start name="alert" item-start style="color: #f53d3d; padding-right: 8px" *ngIf="!boughtOrQueued"></ion-icon>
+      <ion-icon item-start name="checkmark-circle" item-start style="color: #32db64; padding-right: 8px" *ngIf="boughtOrQueued"></ion-icon>
+        {{ message[i] }}
+  </ion-item>
+  <button ion-item (click)="gotoDetails(r)">
+      <ion-icon item-start name="information-circle" item-start style="color: #000000; padding-right: 8px"></ion-icon>
+        Ver mais detalhes
+  </button>
+
 </ion-card>
 
 
