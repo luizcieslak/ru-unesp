@@ -45,7 +45,6 @@ export class MyApp {
     this.pages = [
       { title: 'Home', component: HomePage, icon: 'home' },
       { title: 'Refeições', component: RefeicaoListPage, icon: 'restaurant' },
-      { title: 'Transferência', component: TransferenciaPage, icon: 'swap' },
       { title: 'Ajuda', component: AjudaPage, icon: 'help' },
     ];
 
