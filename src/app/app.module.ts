@@ -36,6 +36,9 @@ import { TitleCasePipe } from '../pipes/title-case-pipe';
 //Angular http
 import { HttpModule } from '@angular/http';
 
+//Parallax Header
+import { ParallaxHeader } from '../components/parallax-header/parallax-header';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -48,7 +51,8 @@ import { HttpModule } from '@angular/http';
     SignupPage,
     FormatPipe,
     TitleCasePipe,
-    FromNowPipe
+    FromNowPipe,
+    ParallaxHeader
   ],
   imports: [
     BrowserModule,
