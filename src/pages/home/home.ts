@@ -12,7 +12,6 @@ import { RefeicaoService } from '../../providers/refeicao-service';
 import { AuthService } from '../../providers/auth-service';
 import { UserService } from '../../providers/user-service';
 
-
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
 
@@ -43,12 +42,7 @@ export class HomePage {
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
-    
-    let r: any = {};
-    r.$key = '11010';
-    const userRefeicoes = this._user.bought(r)
-        .then( result => console.log(result))
-        .catch( reason => console.log('err', reason));
+
     
     //Observable do Usuário
     this.user = this.afDB.object('/users/'+this._auth.uid);
@@ -133,7 +127,12 @@ export class HomePage {
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Você removeu a refeição. Seu saldo será reembolsado.',
-          buttons: ['OK']
+          buttons: [{
+            text:'OK',
+            handler: () =>{
+              this.navCtrl.setRoot(HomePage);
+            }
+          }]
         });
         alert.present();
       })
@@ -235,7 +234,12 @@ export class HomePage {
         let alert = this.alertCtrl.create({
             title: 'Sucesso',
             subTitle: 'Operação realizada com sucesso.',
-            buttons: ['OK']
+            buttons: [{
+              text:'OK',
+              handler: () =>{
+                this.navCtrl.setRoot(HomePage);
+              }
+            }]
           });
         alert.present();
       })

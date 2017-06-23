@@ -44,9 +44,13 @@
 
 
     <button (click)="login()" ion-button block>Login</button>
-    <button (click)="resetPass()" ion-button clear>Esqueceu a senha?</button>
+    <div text-center>
+        <button (click)="resetPass()" ion-button clear small fab-center>Esqueceu a senha?</button>
+        <br>ou<br>
+        <button (click)="signup()" ion-button clear>Crie uma conta</button>
+    </div>
     <br>
-    <button (click)="signup()" ion-button clear>Criar uma conta</button>
+    
     <br>
     <button (click)="help()" ion-button clear>Ajuda</button>
     <button (click)="fastLogin()" ion-button clear>FAST LOGIN</button>
