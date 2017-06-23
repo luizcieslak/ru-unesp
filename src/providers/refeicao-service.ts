@@ -152,11 +152,12 @@ export class RefeicaoService {
           //Pegar a posição do usuário
           this.getUserPos(refeicao)
             .then(count =>{
+              const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
               const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue')
-                .child(this._auth.uid).set(count.snapshot.val());
+                .child(this._auth.uid).set(pos);
               const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
-              const userQueue = this._user.addToQueue(refeicao);
+              const userQueue = this._user.addToQueue(refeicao,pos);
               //Debitar o saldo do usuário
               resolve(Promise.all([refeicaoQueue, queueCount, userQueue]));
             })

@@ -206,9 +206,9 @@ export class UserService {
    * Adiciona a refeição na fila do usuário.
    * @param refeicao A refeição a ser adicionada.
    */
-  addToQueue(refeicao: any): firebase.Promise<any>{
+  addToQueue(refeicao: any, pos: Number): firebase.Promise<any>{
     return Promise.all([
-      firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(true),
+      firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(pos),
       this.debitSaldo() ]);
   }
 

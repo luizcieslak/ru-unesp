@@ -40,6 +40,7 @@
   <button ion-item *ngIf="canQueue[i]" (click)="confirmQueue(r)">
       <ion-icon item-start name="clock" item-start style="color: #488aff; padding-right: 8px"></ion-icon>
         Entrar na fila de espera
+      <ion-badge item-right>{{ r.queue_count }}</ion-badge>
   </button>
   <ion-item *ngIf="!(canBuy[i] || canQueue[i])">
       <ion-icon item-start name="alert" item-start style="color: #f53d3d; padding-right: 8px" *ngIf="!boughtOrQueued"></ion-icon>
