@@ -160,6 +160,14 @@ export class UserService {
   }
 
   /**
+   * Adiciona uma unidade no saldo do usuário
+   */
+  incrementSaldo(): firebase.Promise<any> {
+    return firebase.database().ref('/users/'+ this._auth.uid + '/saldo')
+      .transaction( saldo => saldo + 1);
+  }
+
+  /**
    * Verifica se o usuário já comprou a refeição
    * @argument {string} uid id do usuário
    * @argument {any} refeicao Refeição a ser analisada
