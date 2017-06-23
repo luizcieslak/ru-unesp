@@ -128,6 +128,14 @@ export class RefeicaoService {
   }
 
   /**
+   * Pega a posição do usuário a ser adicionado na fila baseado no contador.
+   * @param refeicao A refeição selecionada
+   */
+  getUserPos(refeicao:any): firebase.Promise<any>{
+    return firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count);
+  }
+
+  /**
    * Coloca o usuário na fila de espera da refeição escolhida.
    * @param refeicao A refeição escolhida
   */
@@ -141,12 +149,18 @@ export class RefeicaoService {
         if (typeof result === 'string' || result instanceof String) {
           reject(new Error(result as string));
         } else {
-          //Promises para adicionar o usuário na fila da refeição.
-          const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue').child(this._auth.uid).set(true);
-          const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
-          const userQueue = this._user.addToQueue(refeicao);
-          //Debitar o saldo do usuário
-          resolve(Promise.all([refeicaoQueue, queueCount, userQueue]));
+          //Pegar a posição do usuário
+          this.getUserPos(refeicao)
+            .then(count =>{
+              //Promises para adicionar o usuário na fila da refeição.
+              const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue')
+                .child(this._auth.uid).set(count.snapshot.val());
+              const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
+              const userQueue = this._user.addToQueue(refeicao);
+              //Debitar o saldo do usuário
+              resolve(Promise.all([refeicaoQueue, queueCount, userQueue]));
+            })
+            .catch(reason => console.log(reason));
         }
       })   
     })
