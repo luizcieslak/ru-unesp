@@ -9,7 +9,6 @@ import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
 import { RefeicaoDetailPage } from '../pages/refeicao-detail/refeicao-detail';
-import { TransferenciaPage } from '../pages/transferencia/transferencia';
 import { LoginPage } from '../pages/login/login';
 import { SignupPage } from '../pages/signup/signup';
 
@@ -28,10 +27,11 @@ import { UserService } from "../providers/user-service";
 import { RefeicaoService } from "../providers/refeicao-service";
 import { TimeService } from '../providers/time-service';
 
-//using moment as pipe
+//Pipes
 import { FormatPipe } from '../pipes/format-pipe';
 import { FromNowPipe } from '../pipes/from-now-pipe';
 import { TitleCasePipe } from '../pipes/title-case-pipe';
+import { UserPosPipe } from '../pipes/user-pos-pipe';
 
 //Angular http
 import { HttpModule } from '@angular/http';
@@ -46,12 +46,12 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     HomePage,
     RefeicaoListPage,
     RefeicaoDetailPage,
-    TransferenciaPage,
     LoginPage,
     SignupPage,
     FormatPipe,
     TitleCasePipe,
     FromNowPipe,
+    UserPosPipe,
     ParallaxHeader
   ],
   imports: [
@@ -69,7 +69,6 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     HomePage,
     RefeicaoListPage,
     RefeicaoDetailPage,
-    TransferenciaPage,
     LoginPage,
     SignupPage
   ],
