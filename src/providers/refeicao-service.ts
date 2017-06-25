@@ -44,6 +44,9 @@ export class RefeicaoService {
    */
   book(refeicao: any, isVeg: boolean): firebase.Promise<any> {
     return new firebase.Promise((resolve, reject) => {
+      //A compra é proibida se já houver fila na refeição
+      //TODO: Verificar se é necessário pegar o queue_count através de uma transaction.
+      if(refeicao.queue_count > 0) reject(new Error('Queue is not empty.'));
       //verificar se o usuário pode comprar a refeição escolhida.
       this._user.canBuy(refeicao).subscribe(result => {
         //Se result for uma string, então ocorreu algum problema
@@ -120,6 +123,7 @@ export class RefeicaoService {
             resolve(true);
             return vagas - 1;
           } else {
+            //TODO: ativar a flag sold_out aqui.
             reject(new Error('Vagas = 0 '));
             return vagas;
           }
@@ -155,7 +159,7 @@ export class RefeicaoService {
               const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
               const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue')
-                .child(this._auth.uid).set(pos);
+                .child(pos.toString()).set(this._auth.uid);
               const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
               const userQueue = this._user.addToQueue(refeicao,pos);
               //Debitar o saldo do usuário

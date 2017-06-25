@@ -134,7 +134,7 @@ export class UserService {
         //Verificar se as condições são verdadeiras
         if(vagas == 0)
           if(saldo > 0)
-            if(!isQueued)
+            if(!isQueued) //adicionar mais um if para se o usuário ja comprou a refeicao
               if(this._time.isAllowed(refeicao.timestamp)){
                 //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
                 subject.next(true);
