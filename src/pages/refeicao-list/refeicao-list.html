@@ -43,8 +43,8 @@
       <ion-badge item-right>{{ r.queue_count }}</ion-badge>
   </button>
   <ion-item *ngIf="!(canBuy[i] || canQueue[i])">
-      <ion-icon item-start name="alert" item-start style="color: #f53d3d; padding-right: 8px" *ngIf="!boughtOrQueued"></ion-icon>
-      <ion-icon item-start name="checkmark-circle" item-start style="color: #32db64; padding-right: 8px" *ngIf="boughtOrQueued"></ion-icon>
+      <ion-icon item-start name="alert" item-start style="color: #f53d3d; padding-right: 8px" *ngIf="!boughtOrQueued[i]"></ion-icon>
+      <ion-icon item-start name="checkmark-circle" item-start style="color: #32db64; padding-right: 8px" *ngIf="boughtOrQueued[i]"></ion-icon>
         {{ message[i] }}
   </ion-item>
   <button ion-item (click)="gotoDetails(r)">

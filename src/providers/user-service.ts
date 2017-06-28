@@ -70,28 +70,35 @@ export class UserService {
     let vagas: Number;
     let saldo: Number;
     let bought: boolean;
+    let isQueueEmpty: boolean;
     const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(
       vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
     const p3 = this.bought(refeicao);
+    const p4 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/queue_count').transaction(
+      count => count); //RefeicaoService not working
 
-    Promise.all([p1,p2,p3])
+    Promise.all([p1,p2,p3,p4])
       .then(values =>{
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
         bought = values[2];
+        isQueueEmpty = values[3].snapshot.val() == 0;
         //Verificar se as condições são verdadeiras
         if(vagas > 0)
           if(saldo > 0)
             if(!bought)
-              if(this._time.isAllowed(refeicao.timestamp)){
-                subject.next(true);
-                subject.complete();
-              }
+              if(isQueueEmpty)
+                if(this._time.isAllowed(refeicao.timestamp)){
+                  subject.next(true);
+                  subject.complete();
+                }
+                else
+                  subject.next('Tempo esgotado');
               else
-                subject.next('Tempo esgotado');
+                subject.next('Fila não vazia');
             else
               subject.next('Comprado');
           else

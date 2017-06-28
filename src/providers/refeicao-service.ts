@@ -44,9 +44,6 @@ export class RefeicaoService {
    */
   book(refeicao: any, isVeg: boolean): firebase.Promise<any> {
     return new firebase.Promise((resolve, reject) => {
-      //A compra é proibida se já houver fila na refeição
-      //TODO: Verificar se é necessário pegar o queue_count através de uma transaction.
-      if(refeicao.queue_count > 0) reject(new Error('Queue is not empty.'));
       //verificar se o usuário pode comprar a refeição escolhida.
       this._user.canBuy(refeicao).subscribe(result => {
         //Se result for uma string, então ocorreu algum problema
