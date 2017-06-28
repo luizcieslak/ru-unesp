@@ -119,28 +119,33 @@ export class UserService {
     let vagas: Number;
     let saldo: Number;
     let isQueued: boolean;
+    let bought: boolean;
     const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
     const p3 = this.isQueued(refeicao);
+    const p4 = this.bought(refeicao);
 
-    Promise.all([p1,p2,p3])
+    Promise.all([p1,p2,p3,p4])
       .then(values =>{
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
         saldo = values[1].snapshot.val();
         isQueued = values[2];
+        bought = values[3];
 
         //Verificar se as condições são verdadeiras
         if(vagas == 0)
           if(saldo > 0)
-            if(!isQueued) //adicionar mais um if para se o usuário ja comprou a refeicao
-              if(this._time.isAllowed(refeicao.timestamp)){
-                //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
-                subject.next(true);
-                subject.complete();
-              }
-              else subject.next('Tempo esgotado');
+            if(!isQueued)
+              if(!bought)
+                if(this._time.isAllowed(refeicao.timestamp)){
+                  //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
+                  subject.next(true);
+                  subject.complete();
+                }
+                else subject.next('Tempo esgotado');
+              else subject.next('Comprado');
             else subject.next('Entrou na fila');
           else subject.next('Sem saldo');
         else subject.next(false);
