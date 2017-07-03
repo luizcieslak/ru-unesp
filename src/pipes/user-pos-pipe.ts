@@ -13,7 +13,7 @@ export class UserPosPipe {
 
   transform(value: any, ...args: any[]): any {
         //value.hasOwnProperty(this._auth.uid);
-        return value[this._auth.uid];
+        return value.queue[this._auth.uid] - value.queue_released;
     }
 }
 

@@ -43,11 +43,15 @@
         <b>Saladas:</b> {{ r.salada1 }} e {{ r.salada2 }} <br>
         <b>Sobremesa:</b> {{ r.sobremesa }}               <br>
         <b>Suco:</b> {{ r.suco }}                         <br><br>
-        <b>Sua posição na fila:</b> {{r.queue | userPos}}<br><br>
+        <b>Sua posição na fila:</b> {{r | userPos}}<br><br>
         <button ion-button (click)= "confirmRemoveQueue(r)" outline color="danger">Desistir da fila</button>
       </div>
     </ion-item>
   </ion-list>
+  
+  <div *ngFor="let key of (user|async)?.queue | keys">
+    {{queueRefeicoes[key.key] | json}}
+  </div>
 
   <pre>{{ user | async | json}}</pre>
 

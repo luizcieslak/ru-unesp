@@ -156,7 +156,7 @@ export class RefeicaoService {
               const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
               const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue')
-                .child(pos.toString()).set(this._auth.uid);
+                .child(this._auth.uid).set(pos);
               const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
               const userQueue = this._user.addToQueue(refeicao,pos);
               //Debitar o saldo do usuário
