@@ -101,7 +101,7 @@ export class HomePage {
   confirmRemove(refeicao: any): void{
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
-      message: 'Tem certeza que deseja desistir desta refeição? Seu saldo será reembolsado.',
+      message: `Tem certeza que deseja desistir da refeição de ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será reembolsado.`,
       buttons: [
         {
           text: 'Cancelar',
@@ -126,7 +126,7 @@ export class HomePage {
       .then(_ =>{
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
-          subTitle: 'Você removeu a refeição. Seu saldo será reembolsado.',
+          subTitle: 'Você removeu esta refeição. Seu saldo será reembolsado.',
           buttons: [{
             text:'OK',
             handler: () =>{
@@ -209,7 +209,7 @@ export class HomePage {
   confirmRemoveQueue(refeicao: any){
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
-      message: 'Tem certeza que deseja desistir desta fila? Seu saldo será reembolsado.',
+      message: `Tem certeza que deseja desistir da fila do dia ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será reembolsado.`,
       buttons: [
         {
           text: 'Cancelar',
@@ -233,7 +233,7 @@ export class HomePage {
       .then(_ =>{
         let alert = this.alertCtrl.create({
             title: 'Sucesso',
-            subTitle: 'Operação realizada com sucesso.',
+            subTitle: 'Operação realizada com sucesso. Seu saldo será reembolsado.',
             buttons: [{
               text:'OK',
               handler: () =>{

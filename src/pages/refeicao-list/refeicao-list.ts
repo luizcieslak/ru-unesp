@@ -101,7 +101,7 @@ export class RefeicaoListPage {
   confirmBook(refeicao: any): void{
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Reserva',
-      message: 'Tem certeza que deseja reservar esta refeição? Seu saldo será debitado.',
+      message: `Tem certeza que deseja reservar a refeicao de ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será debitado.`,
       buttons: [
         {
           text: 'Cancelar',
@@ -153,7 +153,7 @@ export class RefeicaoListPage {
     confirmQueue(refeicao: any): void{
       let confirm = this.alertCtrl.create({
         title: 'Confirmar entrada na fila',
-        message: 'Tem certeza que deseja entrar na fila? Seu saldo será debitado e te avisaremos caso você consiga uma vaga. Se não conseguir, seu saldo será reembolsado.',
+        message: `Tem certeza que deseja entrar na fila da refeição do dia ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será debitado e te avisaremos caso você consiga uma vaga. Se não conseguir, seu saldo será reembolsado.`,
         buttons: [
           {
             text: 'Cancelar',
