@@ -73,7 +73,7 @@ export class SignupPage {
   onSignUpSuccess(): void{
     this.postSignup(this.afAuth.auth.currentUser.uid,this.signupForm.value) //store the additional info (name, RA) into the database
       .then( () => this.onPostSignUpSuccess() )
-      .catch( error => { console.log('error on postSignup(): '+error.message); });
+      .catch( error => { console.log('error on postSignup()',error.message); });
     
   }
 
@@ -82,7 +82,7 @@ export class SignupPage {
    */
   postSignup(uid: string, data): firebase.Promise<any>{
     let user: FirebaseObjectObservable<any>;
-    user = this.afDB.object('users/'+uid);
+    user = this.afDB.object(`users/${uid}`);
     return user.set(({
       name: data.name,
       ra: data.ra,

@@ -34,7 +34,7 @@ export class RefeicaoService {
    * @returns Observable.
    */
   refeicaoObservable(key: string): FirebaseObjectObservable<any> {
-    return this.db.object('refeicoes/' + key);
+    return this.db.object(`refeicoes/${key}`);
   }
 
   /**
@@ -70,9 +70,9 @@ export class RefeicaoService {
   addUser(refeicao: any, isVeg: boolean): firebase.Promise<any> {
     let userList;
     if (isVeg) {
-      userList = firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg');
+      userList = firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg`);
     } else {
-      userList = firebase.database().ref('/refeicoes/' + refeicao.$key + '/users');
+      userList = firebase.database().ref(`/refeicoes/${refeicao.$key}/users`);
     }
 
     //verificar se o usuario ja esta na lista
@@ -91,10 +91,10 @@ export class RefeicaoService {
   */
   incrementCount(refeicao: any, isVeg: boolean): firebase.Promise<any> {
     if (isVeg) {
-      return firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg_count')
+      return firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg_count`)
         .transaction(count => { return count + 1; });
     } else {
-      return firebase.database().ref('/refeicoes/' + refeicao.$key + '/users_count')
+      return firebase.database().ref(`/refeicoes/${refeicao.$key}/users_count`)
         .transaction(count => { return count + 1; });
     }
   }
@@ -103,7 +103,7 @@ export class RefeicaoService {
    * Retorna uma Promise contendo número de vagas da refeição.
    */
   getVagas(refeicao: any): firebase.Promise<any> {
-    return firebase.database().ref('/refeicoes/' + refeicao.$key + '/vagas').transaction(vagas => vagas);
+    return firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`).transaction(vagas => vagas);
   }
 
   /**
@@ -114,7 +114,7 @@ export class RefeicaoService {
   subtractVagas(refeicao: any): firebase.Promise<any> {
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
     return new firebase.Promise((resolve,reject) =>{
-      const p = firebase.database().ref('/refeicoes/' + refeicao.$key + '/vagas')
+      const p = firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
         .transaction(vagas => {
           if (vagas > 0){
             resolve(true);
@@ -133,7 +133,7 @@ export class RefeicaoService {
    * @param refeicao A refeição selecionada
    */
   getUserPos(refeicao:any): firebase.Promise<any>{
-    return firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count);
+    return firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(count => count);
   }
 
   /**
@@ -155,9 +155,9 @@ export class RefeicaoService {
             .then(count =>{
               const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
-              const refeicaoQueue = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue')
+              const refeicaoQueue = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue`)
                 .child(this._auth.uid).set(pos);
-              const queueCount = firebase.database().ref('refeicoes/' + refeicao.$key + '/queue_count').transaction(count => count + 1);
+              const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(count => count + 1);
               const userQueue = this._user.addToQueue(refeicao,pos);
               //Debitar o saldo do usuário
               resolve(Promise.all([refeicaoQueue, queueCount, userQueue]));
@@ -176,12 +176,12 @@ export class RefeicaoService {
   removeUser(refeicao: any, isVeg: boolean): firebase.Promise<any> {
     return isVeg ?
       Promise.all([
-        firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg/' + this._auth.uid).remove(),
-        firebase.database().ref('/refeicoes/' + refeicao.$key + '/usersVeg_count/').transaction(count => count - 1)])
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg/${this._auth.uid}`).remove(),
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg_count/`).transaction(count => count - 1)])
       :
       Promise.all([
-        firebase.database().ref('/refeicoes/' + refeicao.$key + '/users/' + this._auth.uid).remove(),
-        firebase.database().ref('/refeicoes/' + refeicao.$key + '/users_count/').transaction(count => count - 1)])
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/users/${this._auth.uid}`).remove(),
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/users_count/`).transaction(count => count - 1)])
   }
 
   /**
@@ -193,7 +193,7 @@ export class RefeicaoService {
     //verificar se está dentro do tempo
     if (this.time.isAllowed(refeicao.timestamp)) {
       //Adicionar uma vaga na refeicao
-      const vagas = firebase.database().ref('/refeicoes/' + refeicao.$key + '/vagas').transaction(vagas => vagas + 1);
+      const vagas = firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`).transaction(vagas => vagas + 1);
       const removeRefeicao = this._user.removeRefeicao(refeicao);
       const removeUser = this.removeUser(refeicao, isVeg);
 
@@ -210,9 +210,9 @@ export class RefeicaoService {
     return new firebase.Promise((resolve,reject) =>{
         if(this.time.isAllowed(refeicao.timestamp)){
           //Remover o usuário da da fila
-          const removeUser = firebase.database().ref('/refeicoes/' + refeicao.$key + '/queue/' + this._auth.uid).remove();
+          const removeUser = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue/${this._auth.uid}`).remove();
           //decrementar o contador da fila
-          const queueCount = firebase.database().ref('/refeicoes/' + refeicao.$key + '/queue_count').transaction(queue => queue - 1);
+          const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(queue => queue - 1);
           //Remover a refeição do usuário
           const removeQueue = this._user.removeQueue(refeicao);
           //TODO: Verificar se esse reembolso precisa ser feito na Firebase Functions.
@@ -232,10 +232,10 @@ export class RefeicaoService {
    */
   transfer(refeicao: any, dest: any, isVeg: boolean): firebase.Promise<any> {
     //Observable da refeicao origem.
-    const refeicaoUsers = this.db.list('/refeicoes/' + refeicao.$key + '/users');
+    const refeicaoUsers = this.db.list(`/refeicoes/${refeicao.$key}/users`);
 
     //Observable da lista de refeicoes do usuario.
-    const userRefeicoes = this.db.list('/users/' + this._auth.uid + '/refeicoes/');
+    const userRefeicoes = this.db.list(`/users/${this._auth.uid}/refeicoes/`);
 
     //verificar se a refeicao destino tem vagas.
     // const vagas = firebase.database().ref('/refeicoes/'+ dest +'/vagas').transaction(

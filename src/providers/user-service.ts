@@ -41,18 +41,18 @@ export class UserService {
    * @returns Observable.
    */
   userObservable(): FirebaseObjectObservable<any>{
-    return this.afDB.object('users/'+ this._auth.uid);
+    return this.afDB.object(`users/${this._auth.uid}`);
   }
 
   /**
    * Retorna o saldo do usuário logado.
    */
   getSaldo(): firebase.Promise<any>{
-    return firebase.database().ref('users/'+ this._auth.uid +'/saldo').transaction(saldo => saldo);
+    return firebase.database().ref(`users/${this._auth.uid}/saldo`).transaction(saldo => saldo);
   }
 
   isVeg(): firebase.Promise<any>{
-    return firebase.database().ref('users/'+this._auth.uid+'/veg').once('value');
+    return firebase.database().ref(`users/${this._auth.uid}/veg`).once('value');
   }
 
   /**
@@ -71,11 +71,11 @@ export class UserService {
     let saldo: Number;
     let bought: boolean;
     let isQueueEmpty: boolean;
-    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(
+    const p1 = firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`).transaction(
       vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
     const p3 = this.bought(refeicao);
-    const p4 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/queue_count').transaction(
+    const p4 = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(
       count => count); //RefeicaoService not working
 
     Promise.all([p1,p2,p3,p4])
@@ -127,7 +127,7 @@ export class UserService {
     let saldo: Number;
     let isQueued: boolean;
     let bought: boolean;
-    const p1 = firebase.database().ref('/refeicoes/'+ refeicao.$key+ '/vagas').transaction(vagas => vagas); //RefeicaoService not working
+    const p1 = firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`).transaction(vagas => vagas); //RefeicaoService not working
     const p2 = this.getSaldo();
     const p3 = this.isQueued(refeicao);
     const p4 = this.bought(refeicao);
@@ -167,7 +167,7 @@ export class UserService {
    * @returns Promise
    */
   debitSaldo(): firebase.Promise<any> {
-    return firebase.database().ref('/users/'+ this._auth.uid + '/saldo')
+    return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
       .transaction( saldo => { return saldo - 1; });
   }
 
@@ -175,7 +175,7 @@ export class UserService {
    * Adiciona uma unidade no saldo do usuário
    */
   incrementSaldo(): firebase.Promise<any> {
-    return firebase.database().ref('/users/'+ this._auth.uid + '/saldo')
+    return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
       .transaction( saldo => saldo + 1);
   }
 
@@ -187,7 +187,7 @@ export class UserService {
    */
   bought(refeicao: any): firebase.Promise<any> {
     return new firebase.Promise((resolve, reject) => {
-      const p = firebase.database().ref('users/'+ this._auth.uid +'/refeicoes/' + refeicao.$key)
+      const p = firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`)
         .once('value', snapshot => {
             resolve(snapshot.val() !== null);
         })
@@ -198,7 +198,7 @@ export class UserService {
    * Promise que adiciona o id da refeição no documento do usuário.
    */
   addRefeicao(refeicao: any): firebase.Promise<any> {
-    return firebase.database().ref('users/'+ this._auth.uid +'/refeicoes')
+    return firebase.database().ref(`users/${this._auth.uid}/refeicoes`)
       .child(refeicao.$key).set(true); //nao esta na lista
   }
 
@@ -207,7 +207,7 @@ export class UserService {
    */
   isQueued(refeicao: any): firebase.Promise<any>{
     return new firebase.Promise((resolve, reject) => {
-      const p = firebase.database().ref('users/'+ this._auth.uid +'/queue/' + refeicao.$key)
+      const p = firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`)
         .once('value', snapshot => {
             resolve(snapshot.val() !== null);
         })
@@ -220,16 +220,16 @@ export class UserService {
    */
   addToQueue(refeicao: any, pos: Number): firebase.Promise<any>{
     return Promise.all([
-      firebase.database().ref('users/'+ this._auth.uid +'/queue').child(refeicao.$key).set(pos),
+      firebase.database().ref(`users/${this._auth.uid}/queue`).child(refeicao.$key).set(pos),
       this.debitSaldo() ]);
   }
 
   removeRefeicao(refeicao: any): firebase.Promise<any>{
-    return firebase.database().ref('users/' + this._auth.uid + '/refeicoes/'+ refeicao.$key).remove();
+    return firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`).remove();
   }
 
   removeQueue(refeicao: any): firebase.Promise<any>{
-    return firebase.database().ref('users/' + this._auth.uid + '/queue/'+ refeicao.$key).remove();
+    return firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`).remove();
   }
 
 }

@@ -54,7 +54,7 @@ export class HomePage {
         //Resetar o array caso haja alguma atualização.
         this.refeicoes = [];
         this.refeicoesKey.forEach(key => { //então, para cada chave
-          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key); //pegar outras informações da refeição
+          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`); //pegar outras informações da refeição
           refeicaoObservable.subscribe(refeicao => {
             this.refeicoes.push(refeicao); //e dar um push para o array.
           })
@@ -65,7 +65,7 @@ export class HomePage {
       if(user.queue){
         this.queueKey = Object.keys(user.queue);
         this.queueKey.forEach(key => {
-          let refeicaoObservable = this.afDB.object('/refeicoes/'+ key);
+          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`);
           refeicaoObservable.subscribe(refeicao => {
             this.queueRefeicoes.push(refeicao);
           })
