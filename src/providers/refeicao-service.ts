@@ -114,7 +114,7 @@ export class RefeicaoService {
   subtractVagas(refeicao: any): firebase.Promise<any> {
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
     return new firebase.Promise((resolve,reject) =>{
-      const p = firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
+      firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
         .transaction(vagas => {
           if (vagas > 0){
             resolve(true);
@@ -223,35 +223,5 @@ export class RefeicaoService {
           reject(new Error('not allowed'));
         }
     })
-  }
-
-  /**
-   * Tenta transferir a vaga do usuário entre uma refeição e outra.
-   * @param {any} refeicao A refeição de origem.
-   * @param {string} destKey A chave da refeição de destino.
-   */
-  transfer(refeicao: any, dest: any, isVeg: boolean): firebase.Promise<any> {
-    //Observable da refeicao origem.
-    const refeicaoUsers = this.db.list(`/refeicoes/${refeicao.$key}/users`);
-
-    //Observable da lista de refeicoes do usuario.
-    const userRefeicoes = this.db.list(`/users/${this._auth.uid}/refeicoes/`);
-
-    //verificar se a refeicao destino tem vagas.
-    // const vagas = firebase.database().ref('/refeicoes/'+ dest +'/vagas').transaction(
-    //   vagas => {
-    //     if(vagas > 0) return vagas = vagas - -1;
-    //     else return Promise.reject('Sem vagas');
-    //   }
-    // );
-
-    const removeUser = this.removeUser(refeicao, isVeg);
-    const canBuy = this._user.canBuy(dest);
-    const book = this.book(dest, isVeg);
-
-
-    return canBuy ?
-      Promise.all([removeUser, book]) :
-      Promise.reject(false);
   }
 }

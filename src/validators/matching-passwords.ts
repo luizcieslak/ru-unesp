@@ -1,4 +1,4 @@
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 /**
 * Verifica se a senha e confirmação de senha digitadas estão iguais.
 */

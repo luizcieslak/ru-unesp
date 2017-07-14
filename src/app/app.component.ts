@@ -7,7 +7,6 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
-import { TransferenciaPage } from '../pages/transferencia/transferencia';
 
 import { LoginPage } from '../pages/login/login';
 

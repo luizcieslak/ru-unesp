@@ -49,9 +49,12 @@
     </ion-item>
   </ion-list>
   
-  <div *ngFor="let key of (user|async)?.queue | keys">
-    {{queueRefeicoes[key.key] | json}}
-  </div>
+  <!--<div *ngFor="let key of (user|async)?.refeicoes | keys">
+    {{key.key}}: {{key.value}}
+    <div *ngFor="let r of key.value | keys">
+      {{r.key}} - {{r.value}}
+    </div>
+  </div>-->
 
   <pre>{{ user | async | json}}</pre>
 

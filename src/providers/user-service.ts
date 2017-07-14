@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
 import { AuthService } from './auth-service';
@@ -187,7 +187,7 @@ export class UserService {
    */
   bought(refeicao: any): firebase.Promise<any> {
     return new firebase.Promise((resolve, reject) => {
-      const p = firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`)
+      firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`)
         .once('value', snapshot => {
             resolve(snapshot.val() !== null);
         })
@@ -207,7 +207,7 @@ export class UserService {
    */
   isQueued(refeicao: any): firebase.Promise<any>{
     return new firebase.Promise((resolve, reject) => {
-      const p = firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`)
+      firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`)
         .once('value', snapshot => {
             resolve(snapshot.val() !== null);
         })

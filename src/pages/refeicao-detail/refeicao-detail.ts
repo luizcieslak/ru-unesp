@@ -1,15 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, AlertController, LoadingController, Loading, ToastController} from 'ionic-angular';
 
-import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
-import { AngularFireAuth } from 'angularfire2/auth';
-
-//moment.js library for handling timestamps
-import * as moment from 'moment';
-import 'moment/locale/pt-br';
-
-//import firebase namespace for functions that aren't in AngularFire2
-import * as firebase from 'firebase/app';
+import { AngularFireDatabase } from 'angularfire2/database';
 
 import { HomePage } from '../home/home';
 

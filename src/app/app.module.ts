@@ -32,6 +32,9 @@ import { FormatPipe } from '../pipes/format-pipe';
 import { FromNowPipe } from '../pipes/from-now-pipe';
 import { TitleCasePipe } from '../pipes/title-case-pipe';
 import { UserPosPipe } from '../pipes/user-pos-pipe';
+import { KeysPipe } from '../pipes/keys-pipe';
+import { RefeicaoDetailsPipe } from '../pipes/refeicao-details-pipe';
+
 
 //Angular http
 import { HttpModule } from '@angular/http';
@@ -52,6 +55,8 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     TitleCasePipe,
     FromNowPipe,
     UserPosPipe,
+    KeysPipe,
+    RefeicaoDetailsPipe,
     ParallaxHeader
   ],
   imports: [

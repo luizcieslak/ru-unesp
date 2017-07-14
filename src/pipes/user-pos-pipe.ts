@@ -1,5 +1,4 @@
 import { Injectable, Pipe } from '@angular/core';
-import * as moment from 'moment';
 import { AuthService } from '../providers/auth-service';
 
 //Pipe que recebe o objeto da fila de uma refeição e retorna a posição do usuário logado.
