@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+          <ion-icon name="menu"></ion-icon>
+        </button>
+    <ion-title>Perfil</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content>
+
+  <div class="header-image text-center" text-center>
+    <img class="circle" [src]="profilePicture" style="margin-top: 1em">
+  </div>
+  <p text-center>
+    {{ (user | async)?.name | titleCase }} <br>
+    RA: {{ (user | async)?.ra}} <br>
+    Saldo disponível: {{ (user | async)?.saldo }}
+  </p>
+  <ion-list>
+    <ion-list-header>
+      Histórico de Transações
+    </ion-list-header>
+    <ion-item *ngFor="let h of history | async">
+      <h3>{{h.type | titleCase}} - {{h.timestamp | format: 'lll'}}</h3>
+      <p>{{h.description}}</p>
+    </ion-item>
+  </ion-list>
+
+
+</ion-content>

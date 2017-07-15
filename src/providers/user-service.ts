@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+import { AngularFireDatabase, FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
 
 import { AuthService } from './auth-service';
 import { RefeicaoService } from './refeicao-service'; //not working :(
@@ -9,6 +9,8 @@ import Rx from "rxjs/Rx";
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
 
+//gravatar requires a MD5 hash of user's email address.
+import md5 from 'crypto-md5';
 
 @Injectable()
 export class UserService {
@@ -36,6 +38,10 @@ export class UserService {
     }));
   }
 
+  gravatarLink(): string{
+    return "https://www.gravatar.com/avatar/" + md5(this._auth.email.toLowerCase(), 'hex');
+  }
+
   /**
    * Pega a referência do usuário no banco de dados.
    * @returns Observable.
@@ -43,6 +49,11 @@ export class UserService {
   userObservable(): FirebaseObjectObservable<any>{
     return this.afDB.object(`users/${this._auth.uid}`);
   }
+
+  history(): FirebaseListObservable<any>{
+    return this.afDB.list(`users/${this._auth.uid}/saldo_history`);
+  }
+
 
   /**
    * Retorna o saldo do usuário logado.

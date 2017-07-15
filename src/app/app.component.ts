@@ -7,14 +7,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
-
 import { LoginPage } from '../pages/login/login';
+import { ProfilePage } from '../pages/profile/profile';
 
-import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
-import { AngularFireAuth } from 'angularfire2/auth';
-
-//gravatar requires a MD5 hash of user's email address.
-import md5 from 'crypto-md5';
+import { FirebaseObjectObservable } from 'angularfire2/database';
+import { UserService } from '../providers/user-service';
+import { AuthService } from '../providers/auth-service';
 
 @Component({
   templateUrl: 'app.html'
@@ -24,7 +22,7 @@ export class MyApp {
 
   rootPage: any = LoginPage; //Change this for setting the rootPage.
 
-  pages: Array<{title: string, component: any, icon: string}>;
+  pages: Array<{ title: string, component: any, icon: string }>;
 
   //information in sidemenu header
   user: FirebaseObjectObservable<any>;
@@ -33,13 +31,13 @@ export class MyApp {
   profilePicture: any; //gravatar profile pic
 
 
-  constructor(public platform: Platform, public statusBar: StatusBar, 
-    public splashScreen: SplashScreen, private afAuth: AngularFireAuth,
-    public afDB: AngularFireDatabase, public events: Events) {
+  constructor(public platform: Platform, public statusBar: StatusBar,
+    public splashScreen: SplashScreen, public _user: UserService,
+    public events: Events, private _auth: AuthService) {
     this.initializeApp();
-    
+
     //Escutar pelo evento 'login' criado na LoginPage.
-    this.events.subscribe('login',(() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
+    this.events.subscribe('login', (() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
 
     this.pages = [
       { title: 'Home', component: HomePage, icon: 'home' },
@@ -67,16 +65,24 @@ export class MyApp {
   /**
    * Pega a imagem do usuário no Gravatar.
    */
-  onLoginSuccess(): void{ //get logged user
-    this.user = this.afDB.object('/users/'+this.afAuth.auth.currentUser.uid);  
-    this.profilePicture = "https://www.gravatar.com/avatar/" + md5(this.afAuth.auth.currentUser.email.toLowerCase(), 'hex');
+  onLoginSuccess(): void { //get logged user
+    this.user = this._user.userObservable();
+    this.profilePicture = this._user.gravatarLink();
   }
 
   /**
    * Desloga o usuário.
    */
-  signOut(): void{
-    this.afAuth.auth.signOut();
-    this.nav.setRoot(LoginPage);
+  signOut(): void {
+    this._auth.signOut()
+      .then(_ => this.nav.setRoot(LoginPage))
+      .catch(reason => console.log('error in AppComponent#signout()', reason));
+  }
+
+  /**
+   * Vai para a Profile Page
+   */
+  profilePage(){
+    this.nav.setRoot(ProfilePage);
   }
 }

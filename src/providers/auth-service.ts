@@ -36,6 +36,13 @@ export class AuthService {
   }
 
   /**
+   * @returns user's email.
+   */
+  get email(): string{
+    return this.afAuth.authState !== null? this.afAuth.auth.currentUser.email : null;
+  }
+
+  /**
    * Sign in into Firebase using Email.
    * @returns Firebase Promise.
    */

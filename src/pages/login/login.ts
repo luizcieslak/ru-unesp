@@ -10,8 +10,6 @@ import { SignupPage } from '../signup/signup';
 //new imports
 import { AngularFireAuth } from 'angularfire2/auth';
 
-import { AuthInfo } from "../../auth-info";
-
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html'

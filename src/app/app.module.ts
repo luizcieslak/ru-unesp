@@ -11,6 +11,7 @@ import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
 import { RefeicaoDetailPage } from '../pages/refeicao-detail/refeicao-detail';
 import { LoginPage } from '../pages/login/login';
 import { SignupPage } from '../pages/signup/signup';
+import { ProfilePage } from '../pages/profile/profile';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -33,8 +34,6 @@ import { FromNowPipe } from '../pipes/from-now-pipe';
 import { TitleCasePipe } from '../pipes/title-case-pipe';
 import { UserPosPipe } from '../pipes/user-pos-pipe';
 import { KeysPipe } from '../pipes/keys-pipe';
-import { RefeicaoDetailsPipe } from '../pipes/refeicao-details-pipe';
-
 
 //Angular http
 import { HttpModule } from '@angular/http';
@@ -51,12 +50,12 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     RefeicaoDetailPage,
     LoginPage,
     SignupPage,
+    ProfilePage,
     FormatPipe,
     TitleCasePipe,
     FromNowPipe,
     UserPosPipe,
     KeysPipe,
-    RefeicaoDetailsPipe,
     ParallaxHeader
   ],
   imports: [
@@ -75,7 +74,8 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     RefeicaoListPage,
     RefeicaoDetailPage,
     LoginPage,
-    SignupPage
+    SignupPage,
+    ProfilePage
   ],
   providers: [
     StatusBar,

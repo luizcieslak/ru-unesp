@@ -19,7 +19,7 @@
 <p *ngIf="empty" text-center>Não há refeições para as próximas semanas.</p>
 
 <ion-card *ngFor="let r of (refeicoes | async) ; let i = index"> 
-  <img src="img/ru.png"/>
+  <img src="assets/ru.png"/>
   <ion-card-content>
     <ion-card-title>
       {{r. timestamp | format: 'LL' }}

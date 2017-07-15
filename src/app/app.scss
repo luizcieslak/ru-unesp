@@ -32,4 +32,12 @@
 
 .circle {
   @include circle(150px, #999);
+  border-style: groove;
+  border-width: 5px;
+  border-color: #fff;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
 }
