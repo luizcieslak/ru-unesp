@@ -14,3 +14,30 @@
 // To declare rules for a specific mode, create a child rule
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
+
+@mixin center($width: null, $height: null) {
+  top: 100%;
+  left: 100%;
+}
+
+
+@mixin circle($width, $color) {
+  width: $width;
+  height: $width;
+  background: $color;
+  -webkit-border-radius: $width/2;
+     -moz-border-radius: $width/2;
+          border-radius: $width/2;
+}
+
+.circle {
+  @include circle(150px, #999);
+  border-style: groove;
+  border-width: 5px;
+  border-color: #fff;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}

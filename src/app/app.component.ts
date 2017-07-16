@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Nav, Platform } from 'ionic-angular';
+import { Nav, Platform, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
@@ -7,11 +7,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { AjudaPage } from '../pages/ajuda/ajuda';
 import { HomePage } from '../pages/home/home';
 import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
-import { TransferenciaPage } from '../pages/transferencia/transferencia';
-
-//not sure if need this pages here.
 import { LoginPage } from '../pages/login/login';
-import { SignupPage } from '../pages/signup/signup';
+import { ProfilePage } from '../pages/profile/profile';
+
+import { FirebaseObjectObservable } from 'angularfire2/database';
+import { UserService } from '../providers/user-service';
+import { AuthService } from '../providers/auth-service';
 
 @Component({
   templateUrl: 'app.html'
@@ -19,19 +20,29 @@ import { SignupPage } from '../pages/signup/signup';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = HomePage; //Change this for setting the rootPage.
+  rootPage: any = LoginPage; //Change this for setting the rootPage.
 
-  pages: Array<{title: string, component: any}>;
+  pages: Array<{ title: string, component: any, icon: string }>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
+  //information in sidemenu header
+  user: FirebaseObjectObservable<any>;
+  name: string;
+  saldo: Number;
+  profilePicture: any; //gravatar profile pic
+
+
+  constructor(public platform: Platform, public statusBar: StatusBar,
+    public splashScreen: SplashScreen, public _user: UserService,
+    public events: Events, private _auth: AuthService) {
     this.initializeApp();
 
-    // used for an example of ngFor and navigation on sidemenu
+    //Escutar pelo evento 'login' criado na LoginPage.
+    this.events.subscribe('login', (() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
+
     this.pages = [
-      { title: 'Home', component: HomePage },
-      { title: 'Refeições', component: RefeicaoListPage },
-      { title: 'Transferência', component: TransferenciaPage },
-      { title: 'Ajuda', component: AjudaPage },
+      { title: 'Home', component: HomePage, icon: 'home' },
+      { title: 'Refeições', component: RefeicaoListPage, icon: 'restaurant' },
+      { title: 'Ajuda', component: AjudaPage, icon: 'help' },
     ];
 
   }
@@ -49,5 +60,29 @@ export class MyApp {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
+  }
+
+  /**
+   * Pega a imagem do usuário no Gravatar.
+   */
+  onLoginSuccess(): void { //get logged user
+    this.user = this._user.userObservable();
+    this.profilePicture = this._user.gravatarLink();
+  }
+
+  /**
+   * Desloga o usuário.
+   */
+  signOut(): void {
+    this._auth.signOut()
+      .then(_ => this.nav.setRoot(LoginPage))
+      .catch(reason => console.log('error in AppComponent#signout()', reason));
+  }
+
+  /**
+   * Vai para a Profile Page
+   */
+  profilePage() {
+    this.nav.setRoot(ProfilePage);
   }
 }

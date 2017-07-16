@@ -8,11 +8,54 @@
 </ion-header>
 
 <ion-content padding>
-  <h3>Ionic Menu Starter</h3>
 
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will show you the way.
-  </p>
+  <ion-list>
+    <ion-item-divider> Próximas refeições</ion-item-divider>
+    <ion-item *ngFor="let r of refeicoes" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
+      {{ r.timestamp | format:'LL' }}
+      <ion-icon item-right small [name]="isGroupShown(r) ? 'arrow-dropdown' : 'arrow-dropright'"></ion-icon>
+      <div *ngIf="isGroupShown(r)">
+        <br>
+        <b>Pratos base:</b> {{ r.base1 }} e {{ r.base2 }} <br>
+        <b>Principal:</b> {{ r.principal }}               <br>
+        <b>Vegetariano:</b> {{ r.veg }}                   <br>
+        <b>Guarnição:</b> {{ r.guarnicao }}               <br>
+        <b>Saladas:</b> {{ r.salada1 }} e {{ r.salada2 }} <br>
+        <b>Sobremesa:</b> {{ r.sobremesa }}               <br>
+        <b>Suco:</b> {{ r.suco }}                         <br><br>
+        <button ion-button (click)= "confirmRemove(r)" outline color="danger">Desistir</button>
+        <!--<button ion-button (click)= "confirmTransfer(r)" outline>Transferir</button>-->
+      </div>
+    </ion-item>
+  </ion-list>
 
-  <button ion-button secondary menuToggle>Toggle Menu</button>
+   <ion-list>
+    <ion-item-divider>Filas de espera</ion-item-divider>
+    <ion-item *ngFor="let r of queueRefeicoes" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
+      {{ r.timestamp | format:'LL' }}
+      <ion-icon item-right small [name]="isGroupShown(r) ? 'arrow-dropdown' : 'arrow-dropright'"></ion-icon>
+      <div *ngIf="isGroupShown(r)">
+        <br>
+        <b>Pratos base:</b> {{ r.base1 }} e {{ r.base2 }} <br>
+        <b>Principal:</b> {{ r.principal }}               <br>
+        <b>Vegetariano:</b> {{ r.veg }}                   <br>
+        <b>Guarnição:</b> {{ r.guarnicao }}               <br>
+        <b>Saladas:</b> {{ r.salada1 }} e {{ r.salada2 }} <br>
+        <b>Sobremesa:</b> {{ r.sobremesa }}               <br>
+        <b>Suco:</b> {{ r.suco }}                         <br><br>
+        <b>Sua posição na fila:</b> {{r | userPos}}<br><br>
+        <button ion-button (click)= "confirmRemoveQueue(r)" outline color="danger">Desistir da fila</button>
+      </div>
+    </ion-item>
+  </ion-list>
+  
+  <!--<div *ngFor="let key of (user|async)?.refeicoes | keys">
+    {{key.key}}: {{key.value}}
+    <div *ngFor="let r of key.value | keys">
+      {{r.key}} - {{r.value}}
+    </div>
+  </div>-->
+
+  <pre>{{ user | async | json}}</pre>
+
 </ion-content>

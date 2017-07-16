@@ -1,19 +1,37 @@
 <!--
-  Generated template for the RefeicaoDetail page.
+  Generated template for the refeicaoParamsDetail page.
 
   See http://ionicframework.com/docs/v2/components/#navigation for more info on
   Ionic pages and navigation.
 -->
 <ion-header>
-    <ion-navbar>
-        <button ion-button menuToggle>
+  <ion-navbar>
+    <button ion-button menuToggle>
           <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>refeicao-detail</ion-title>
-    </ion-navbar>
+    <ion-title>Detalhes da refeição</ion-title>
+  </ion-navbar>
 </ion-header>
 
 
-<ion-content padding>
+<ion-content parallax-header>
 
+  <div class="header-image" background-image="assets/ru.png"></div>
+
+  <div class="main-content">
+
+    <p><b>Prato Base: </b> {{refeicaoParams.base1}} e {{refeicaoParams.base2}}</p>
+    <p><b>Prato Principal: </b> {{refeicaoParams.principal}}</p>
+    <p><b>Opcao vegetariana: </b> {{refeicaoParams.veg}}</p>
+    <p><b>Guarnição: </b> {{refeicaoParams.guarnicao}}</p>
+    <p><b>Saladas: </b> {{refeicaoParams.salada1}} e {{refeicaoParams.salada2}}</p>
+    <p><b>Sobremesa: </b> {{refeicaoParams.sobremesa}} </p>
+    <p><b>Suco: </b> {{refeicaoParams.suco}}</p>
+    <p><b>Vagas: </b> {{refeicaoParams.vagas}}</p>
+    <p><b>Pessoas na fila: </b> {{ refeicaoParams.queue_count }}</p>
+
+    <!-- Buttons disabled for now -->
+    <!--<button ion-button (click)="confirmBook()" block [color]="canBuy? '' : 'danger'" [disabled]="!canBuy">{{ buttonMsg }}</button>
+    <button ion-button block *ngIf="canQueue" (click)="confirmQueue()">{{ buttonQueueMsg }}</button>-->
+  </div>
 </ion-content>
