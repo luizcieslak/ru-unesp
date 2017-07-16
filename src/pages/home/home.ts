@@ -30,22 +30,21 @@ export class HomePage {
   queueRefeicoes: Array<any> = [];
 
   constructor(public navCtrl: NavController, private _auth: AuthService,
-  public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
-  public alertCtrl: AlertController, public time: TimeService, 
-  public _refeicao: RefeicaoService, public _user: UserService) {
+    public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
+    public alertCtrl: AlertController, public time: TimeService,
+    public _refeicao: RefeicaoService, public _user: UserService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
 
-    
     //Observable do Usuário
-    this.user = this.afDB.object('/users/'+this._auth.uid);
-    this.user.subscribe( user =>{
+    this.user = this.afDB.object('/users/' + this._auth.uid);
+    this.user.subscribe(user => {
       this.isVeg = user.veg;
-      if(user.refeicoes){
+      if (user.refeicoes) {
         //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
-        this.refeicoesKey = Object.keys(user.refeicoes); 
+        this.refeicoesKey = Object.keys(user.refeicoes);
         //Resetar o array caso haja alguma atualização.
         this.refeicoes = [];
         this.refeicoesKey.forEach(key => { //então, para cada chave
@@ -55,9 +54,9 @@ export class HomePage {
           })
         })
       }
-      
+
       //repetir o mesmo processo para as refeições na lista de espera
-      if(user.queue){
+      if (user.queue) {
         this.queueKey = Object.keys(user.queue);
         this.queueKey.forEach(key => {
           let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`);
@@ -70,7 +69,7 @@ export class HomePage {
       this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
 
-    
+
   }
 
   /**
@@ -78,11 +77,11 @@ export class HomePage {
    * @param {Number} group O index do item da lista
   */
   toggleGroup(group) {
-      if (this.isGroupShown(group)) {
-          this.shownGroup = null;
-      } else {
-          this.shownGroup = group;
-      }
+    if (this.isGroupShown(group)) {
+      this.shownGroup = null;
+    } else {
+      this.shownGroup = group;
+    }
   }
 
   /**
@@ -90,10 +89,10 @@ export class HomePage {
    * @param {Number} group O index do item da lista.
   */
   isGroupShown(group): boolean {
-      return this.shownGroup === group;
+    return this.shownGroup === group;
   };
 
-  confirmRemove(refeicao: any): void{
+  confirmRemove(refeicao: any): void {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
       message: `Tem certeza que deseja desistir da refeição de ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será reembolsado.`,
@@ -116,15 +115,17 @@ export class HomePage {
    * Remove o usuário da refeição, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
-  remove(refeicao: any): void{
+  remove(refeicao: any): void {
     this._refeicao.remove(refeicao, this.isVeg)
-      .then(_ =>{
+      .then(_ => {
+        //Adicionar transação no histórico
+        this._user.addHistory('desistência', `Desistiu da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Você removeu esta refeição. Seu saldo será reembolsado.',
           buttons: [{
-            text:'OK',
-            handler: () =>{
+            text: 'OK',
+            handler: () => {
               this.navCtrl.setRoot(HomePage);
             }
           }]
@@ -132,7 +133,7 @@ export class HomePage {
         alert.present();
       })
       .catch(reason => {
-        if(!reason){
+        if (!reason) {
           let alert = this.alertCtrl.create({
             title: 'Erro',
             subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
@@ -143,7 +144,7 @@ export class HomePage {
       });
   }
 
-  confirmRemoveQueue(refeicao: any){
+  confirmRemoveQueue(refeicao: any) {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
       message: `Tem certeza que deseja desistir da fila do dia ${moment(refeicao.timestamp).format(`L`)}? Seu saldo será reembolsado.`,
@@ -165,27 +166,29 @@ export class HomePage {
   /**
    * Remove o usuário da fila, reembolsando-o.
    */
-  removeQueue(refeicao: any){
+  removeQueue(refeicao: any) {
     this._refeicao.removeQueue(refeicao)
-      .then(_ =>{
+      .then(_ => {
+        //Adicionar transação no histórico
+        this._user.addHistory('desistência', `Desistiu da fila da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
         let alert = this.alertCtrl.create({
-            title: 'Sucesso',
-            subTitle: 'Operação realizada com sucesso. Seu saldo será reembolsado.',
-            buttons: [{
-              text:'OK',
-              handler: () =>{
-                this.navCtrl.setRoot(HomePage);
-              }
-            }]
-          });
+          title: 'Sucesso',
+          subTitle: 'Operação realizada com sucesso. Seu saldo será reembolsado.',
+          buttons: [{
+            text: 'OK',
+            handler: () => {
+              this.navCtrl.setRoot(HomePage);
+            }
+          }]
+        });
         alert.present();
       })
-      .catch(reason =>{
+      .catch(reason => {
         let alert = this.alertCtrl.create({
-            title: 'Erro',
-            subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
-            buttons: ['OK']
-          });
+          title: 'Erro',
+          subTitle: 'Não é possível realizar esta operação com menos de um dia de antecedência.',
+          buttons: ['OK']
+        });
         alert.present();
       });
   }

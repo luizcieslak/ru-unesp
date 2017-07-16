@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, AlertController, ToastController, Events} from 'ionic-angular';
+import { NavController, NavParams, AlertController, ToastController, Events } from 'ionic-angular';
 
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { EmailValidator } from '../../validators/email';
@@ -25,27 +25,23 @@ export class LoginPage {
   //String variable that stores the server error in a failed signin.
   private loginError: string;
 
- 
-  constructor(public navCtrl: NavController, public navParams: NavParams, 
+
+  constructor(public navCtrl: NavController, public navParams: NavParams,
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
     public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
 
-      //Create FormBuilder with your inputs and their Validators.
-      this.loginForm = this.formBuilder.group({
-        email: ['', Validators.compose([ Validators.required, EmailValidator.isValid ]) ],
-        password: ['', Validators.required]
-      });
+    //Create FormBuilder with your inputs and their Validators.
+    this.loginForm = this.formBuilder.group({
+      email: ['', Validators.compose([Validators.required, EmailValidator.isValid])],
+      password: ['', Validators.required]
+    });
 
 
-      //TODO: Persistir login do usuário
-      afAuth.authState.subscribe(auth => {
-        auth === null? console.log('no auth') : this.navCtrl.setRoot(HomePage);
-      })
-      
-  }
+    //TODO: Persistir login do usuário
+    afAuth.authState.subscribe(auth => {
+      auth === null ? console.log('no auth') : this.navCtrl.setRoot(HomePage);
+    })
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad Login');
   }
 
   /**
@@ -53,21 +49,21 @@ export class LoginPage {
    */
   login(): void {
     this.submitAttempt = true;
-    if(this.loginForm.valid){
+    if (this.loginForm.valid) {
 
-      this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email,this.loginForm.value.password)
+      this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email, this.loginForm.value.password)
         .then(() => this.onLoginSuccess())  //  Se o login deu certo, executar onLoginSuccess
         .catch(error => { this.loginError = error.message }); //se não, mostre o erro. 
 
-    }else{
+    } else {
       console.log("loginForm is not valid.");
     }
   }
-  
+
   /**
    * Executa as funções após o login.
    */
-  onLoginSuccess(): void{
+  onLoginSuccess(): void {
     this.events.publish('login'); //Criar um evento chamado 'login' para o sidemenu.
     this.navCtrl.setRoot(HomePage); //Ir para HomePage.
   }
@@ -75,40 +71,40 @@ export class LoginPage {
   /**
    * Envia um email para resetar a senha do usuário.
    */
-  resetPass(): void{
+  resetPass(): void {
     let prompt = this.alertCtrl.create({
-        title: 'Esqueceu a senha?',
-        message: "Digite seu email para podermos resetar sua senha.",
-        inputs: [
-          {
-            name: 'email',
-            placeholder: 'Email'
-          },
-        ],
-        buttons: [
-          {
-            text: 'Cancel',
-            handler: data => {
-              console.log('Cancel clicked on forgotPassword()');
-            }
-          },
-          {
-            text: 'Enviar',
-            handler: data => {
-              this.afAuth.auth.sendPasswordResetEmail(data.email)
-                .then(() => { this.onResetSuccess(data.email); })
-                .catch(error => { this.onResetFailure(error.message); });           
-            }
+      title: 'Esqueceu a senha?',
+      message: "Digite seu email para podermos resetar sua senha.",
+      inputs: [
+        {
+          name: 'email',
+          placeholder: 'Email'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          handler: data => {
+            console.log('Cancel clicked on forgotPassword()');
           }
-        ]
-      });
+        },
+        {
+          text: 'Enviar',
+          handler: data => {
+            this.afAuth.auth.sendPasswordResetEmail(data.email)
+              .then(() => { this.onResetSuccess(data.email); })
+              .catch(error => { this.onResetFailure(error.message); });
+          }
+        }
+      ]
+    });
     prompt.present();
   }
 
   /**
    * Mostra um Toast caso a resetPass() tenha sido sucedida.
    */
-  onResetSuccess(email: string): void{
+  onResetSuccess(email: string): void {
     let toast = this.toastCtrl.create({
       message: 'Email enviado para ' + email,
       duration: 3000
@@ -119,7 +115,7 @@ export class LoginPage {
   /**
    * Mostra um Toast caso a resetPass() tenha falhado.
    */
-  onResetFailure(error: string){
+  onResetFailure(error: string) {
     let toast = this.toastCtrl.create({
       message: error,
       duration: 3000
@@ -130,7 +126,7 @@ export class LoginPage {
   /**
    * Alert que mostra ajuda antes do login.
    */
-  help(): void{
+  help(): void {
     let help = this.alertCtrl.create({
       title: 'Ajuda',
       subTitle: 'AJUDA LUCIANO',
@@ -142,18 +138,20 @@ export class LoginPage {
   /**
    * Vai para a página de signup
    */
-  signup(): void{
+  signup(): void {
     this.navCtrl.push(SignupPage);
   }
 
-  fastLogin(): void{
-    this.afAuth.auth.signInWithEmailAndPassword("cieslakluiz@gmail.com","123456")
+  //função para o desenvolvimento
+  fastLogin(): void {
+    this.afAuth.auth.signInWithEmailAndPassword("cieslakluiz@gmail.com", "123456")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
 
-  vegLogin(): void{
-    this.afAuth.auth.signInWithEmailAndPassword("luiz_cieslak@hotmail.com","luizveg")
+  //função para o desenvolvimento
+  vegLogin(): void {
+    this.afAuth.auth.signInWithEmailAndPassword("luiz_cieslak@hotmail.com", "luizveg")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }

@@ -82,7 +82,7 @@ export class MyApp {
   /**
    * Vai para a Profile Page
    */
-  profilePage(){
+  profilePage() {
     this.nav.setRoot(ProfilePage);
   }
 }

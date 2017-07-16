@@ -84,7 +84,7 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     UserService,
     AuthService,
     TimeService,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })
-export class AppModule {}
+export class AppModule { }

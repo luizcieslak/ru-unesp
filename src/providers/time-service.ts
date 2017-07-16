@@ -19,20 +19,23 @@ export class TimeService {
    * podem ser feitas até 1 dia antes da refeição.
    * @argument {Number} timestamp timestamp da refeição
    */
-  isAllowed(timestamp: Number): boolean{
+  isAllowed(timestamp: any): boolean {
     //TODO: Ao invés de usar moment.now(), usar o moment do servidor.
-    return moment().isBefore(moment(timestamp).subtract(1,'days'));
+    return moment().isBefore(moment(timestamp).subtract(1, 'days'));
   }
 
   /**
    * Pega a hora do servidor do Google Cloud, no formato UTC.
    * @returns Observable com a timestamp.
    */
-  serverTimestamp(): Rx.Observable<any>{
+  serverTimestamp(): Rx.Observable<any> {
     return this.http.get(`https://us-central1-unespru.cloudfunctions.net/utc`).map(res => res.json());
   }
 
-  localTimestamp(): Number{
+  /**
+   * Retorna o timestamp do dia e horário atual.
+   */
+  localTimestamp(): Number {
     return moment().valueOf();
   }
 

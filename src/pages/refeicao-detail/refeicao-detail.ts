@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, AlertController, LoadingController, Loading, ToastController} from 'ionic-angular';
+import { NavController, NavParams, AlertController, LoadingController, Loading, ToastController } from 'ionic-angular';
 
 import { AngularFireDatabase } from 'angularfire2/database';
 
@@ -25,26 +25,26 @@ export class RefeicaoDetailPage {
   canQueue: boolean; //Variável que guarda se o usuário pode entrar na fila de espera. (usada no botão)
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
-    public afDB:AngularFireDatabase, public alertCtrl: AlertController, 
-    public loadingCtrl: LoadingController, public toastCtrl: ToastController, 
+    public afDB: AngularFireDatabase, public alertCtrl: AlertController,
+    public loadingCtrl: LoadingController, public toastCtrl: ToastController,
     public _user: UserService, public _refeicao: RefeicaoService) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
     this.loading.present();
-    
+
     //Pegar a refeição enviada por NavParams
     this.refeicaoParams = this.navParams.get('refeicao');
 
     //iniciar as variaveis canBuy e canQueue
     const obs1 = this._user.canBuy(this.refeicaoParams);
-    obs1.subscribe(result =>{
+    obs1.subscribe(result => {
       console.log('canBuy?', result);
       //Se result for uma string, então ocorreu algum problema
-      if (typeof result === 'string' || result instanceof String){
+      if (typeof result === 'string' || result instanceof String) {
         this.canBuy = false;
         this.buttonMsg = result as string;
-      }else{
+      } else {
         this.canBuy = result;
       }
 
@@ -52,11 +52,11 @@ export class RefeicaoDetailPage {
       obs2.subscribe(result => {
         console.log('canQueue?', result);
         //Se result for uma string, então ocorreu algum problema
-        if (typeof result === 'string' || result instanceof String){
+        if (typeof result === 'string' || result instanceof String) {
           this.canQueue = false;
           this.buttonQueueMsg = result as string;
-        //Se canBuy = true, canQueue = false
-        }else{
+          //Se canBuy = true, canQueue = false
+        } else {
           this.canQueue = result;
         }
 
@@ -74,7 +74,7 @@ export class RefeicaoDetailPage {
   /**
    * Função pré book() que pergunta se o usuário confirma a reserva.
    */
-  confirmBook(): void{
+  confirmBook(): void {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Reserva',
       message: 'Tem certeza que deseja reservar esta refeição? Seu saldo será debitado.',
@@ -93,22 +93,22 @@ export class RefeicaoDetailPage {
     confirm.present();
   }
 
-  book(): void{
+  book(): void {
     this._user.isVeg()
-      .then(snapshot =>{
+      .then(snapshot => {
         this._refeicao.book(this.refeicaoParams, snapshot.val())
           .then(_ => {
             //Mostrar mensagem de confirmação.
             //Não seria melhor um toast?
             let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
-                  title: 'Sucesso',
-                  subTitle: 'Compra realizada com sucesso!',
-                  buttons: [{ 
-                    text: 'OK',
-                    handler: _ => {
-                      this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
-                    }
-                  }]
+              title: 'Sucesso',
+              subTitle: 'Compra realizada com sucesso!',
+              buttons: [{
+                text: 'OK',
+                handler: _ => {
+                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                }
+              }]
             });
             alert.present();
           })
@@ -123,47 +123,47 @@ export class RefeicaoDetailPage {
       })
   }
 
-   /**
-    * Função pré queue() que confirma a entrada do usuário na fila de espera.
-    */
-    confirmQueue(): void{
-      let confirm = this.alertCtrl.create({
-        title: 'Confirmar entrada na fila',
-        message: 'Tem certeza que deseja entrar na fila? Seu saldo será debitado e te avisaremos caso você consiga uma vaga. Se não conseguir, seu saldo será reembolsado.',
-        buttons: [
-          {
-            text: 'Cancelar',
-          },
-          {
-            text: 'Sim',
-            handler: () => {
-              this.queue();
-            }
+  /**
+   * Função pré queue() que confirma a entrada do usuário na fila de espera.
+   */
+  confirmQueue(): void {
+    let confirm = this.alertCtrl.create({
+      title: 'Confirmar entrada na fila',
+      message: 'Tem certeza que deseja entrar na fila? Seu saldo será debitado e te avisaremos caso você consiga uma vaga. Se não conseguir, seu saldo será reembolsado.',
+      buttons: [
+        {
+          text: 'Cancelar',
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            this.queue();
           }
-        ]
-      });
-      confirm.present();
-    }
+        }
+      ]
+    });
+    confirm.present();
+  }
 
-    /**
-     * Coloca o usuário na fila de espera.
-     */
-    queue(): void{
-      this._refeicao.queue(this.refeicaoParams)
-        .then(_ => {
-          let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
-              title: 'Sucesso',
-              subTitle: 'Você entrou na fila!',
-              buttons: [{ 
-                text: 'OK',
-                handler: _ => {
-                    this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
-                }
-              }]
-          });
-          alert.present();
-        })
-        .catch(error => console.log('error in queue()', error));
-    }
+  /**
+   * Coloca o usuário na fila de espera.
+   */
+  queue(): void {
+    this._refeicao.queue(this.refeicaoParams)
+      .then(_ => {
+        let alert = this.alertCtrl.create({ //AlertController para a compra realizada com sucesso.
+          title: 'Sucesso',
+          subTitle: 'Você entrou na fila!',
+          buttons: [{
+            text: 'OK',
+            handler: _ => {
+              this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+            }
+          }]
+        });
+        alert.present();
+      })
+      .catch(error => console.log('error in queue()', error));
+  }
 
 }

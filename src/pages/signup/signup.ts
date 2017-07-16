@@ -17,7 +17,7 @@ import * as firebase from 'firebase/app';
   templateUrl: 'signup.html'
 })
 export class SignupPage {
-  
+
   //A FormGroup is a collection of FormControls, which is inputed in html.
   private signupForm: FormGroup;
 
@@ -27,21 +27,21 @@ export class SignupPage {
   //String variable that stores the server error in a failed signin.
   private signupError: string;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, 
+  constructor(public navCtrl: NavController, public navParams: NavParams,
     private formBuilder: FormBuilder, private afAuth: AngularFireAuth,
     public afDB: AngularFireDatabase) {
 
-      //Create FormBuilder with your inputs and their Validators.
-      this.signupForm = this.formBuilder.group({
-        email: ['', Validators.compose([ Validators.required, EmailValidator.isValid ]) ],
-        name: ['', Validators.compose([Validators.required, Validators.maxLength(30)])],
-        ra: ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(9), RaValidator.isValid,])],
-        password: ['', Validators.compose([Validators.required, Validators.minLength(6)])],
-        confirmPass: ['', Validators.required],
-        veg: ['false', Validators.required]
-      },{validator: matchingPasswords('password','confirmPass')});
+    //Create FormBuilder with your inputs and their Validators.
+    this.signupForm = this.formBuilder.group({
+      email: ['', Validators.compose([Validators.required, EmailValidator.isValid])],
+      name: ['', Validators.compose([Validators.required, Validators.maxLength(30)])],
+      ra: ['', Validators.compose([Validators.required, Validators.minLength(8), Validators.maxLength(9), RaValidator.isValid,])],
+      password: ['', Validators.compose([Validators.required, Validators.minLength(6)])],
+      confirmPass: ['', Validators.required],
+      veg: ['false', Validators.required]
+    }, { validator: matchingPasswords('password', 'confirmPass') });
 
-    }
+  }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad SignupPage');
@@ -50,19 +50,19 @@ export class SignupPage {
   /**
    * Cria uma conta com email e senha caso o formulário for válido.
    */
-  signUp(): void{
+  signUp(): void {
     this.submitAttempt = true;
-    if(this.signupForm.valid){
+    if (this.signupForm.valid) {
       //create a user using AuthService
       this.afAuth.auth.createUserWithEmailAndPassword(this.signupForm.value.email, this.signupForm.value.password)
         //then, call onSignUpSuccess
-        .then(() => this.onSignUpSuccess() )
+        .then(() => this.onSignUpSuccess())
         //if there is an error, display to the user.
         .catch(error => this.signupError = error.message);
 
       //go to login page after all.
       //this.navCtrl.push(LoginPage);
-    }else{
+    } else {
       console.log('signupForm is not valid.');
     }
   }
@@ -70,17 +70,17 @@ export class SignupPage {
   /**
    * Executa funções após o signUp().
    */
-  onSignUpSuccess(): void{
-    this.postSignup(this.afAuth.auth.currentUser.uid,this.signupForm.value) //store the additional info (name, RA) into the database
-      .then( () => this.onPostSignUpSuccess() )
-      .catch( error => { console.log('error on postSignup()',error.message); });
-    
+  onSignUpSuccess(): void {
+    this.postSignup(this.afAuth.auth.currentUser.uid, this.signupForm.value) //store the additional info (name, RA) into the database
+      .then(() => this.onPostSignUpSuccess())
+      .catch(error => { console.log('error on postSignup()', error.message); });
+
   }
 
   /**
    * Armazena os outros dados do usuário na árvore /users/
    */
-  postSignup(uid: string, data): firebase.Promise<any>{
+  postSignup(uid: string, data): firebase.Promise<any> {
     let user: FirebaseObjectObservable<any>;
     user = this.afDB.object(`users/${uid}`);
     return user.set(({
@@ -98,7 +98,7 @@ export class SignupPage {
   /**
    * Desloga o usuário após a criação (O login após signup é padrão do Firebase).
    */
-  onPostSignUpSuccess(): void{
+  onPostSignUpSuccess(): void {
     console.log('onPostSignUpSuccess()');
     this.afAuth.auth.signOut();
     this.navCtrl.push(LoginPage);

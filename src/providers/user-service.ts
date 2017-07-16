@@ -12,20 +12,24 @@ import * as firebase from 'firebase/app';
 //gravatar requires a MD5 hash of user's email address.
 import md5 from 'crypto-md5';
 
+//moment.js library for handling timestamps
+import * as moment from 'moment';
+import 'moment/locale/pt-br';
+
 @Injectable()
 export class UserService {
 
   //can't import RefeicaoService here, gives 'can't resolve all parameters' error.
   constructor(private afDB: AngularFireDatabase, private _auth: AuthService,
-  private _time: TimeService) {
+    private _time: TimeService) {
   }
 
   /**
    * Function called after AuthService.signUp() to store user's additional info.
    * @argument {string} uid id do usuário
    */
-  postSignup(uid: string, data): firebase.Promise<any>{
-    const user = this.afDB.object('users/'+uid);
+  postSignup(uid: string, data): firebase.Promise<any> {
+    const user = this.afDB.object('users/' + uid);
     return user.set(({
       name: data.name,
       ra: data.ra,
@@ -38,7 +42,7 @@ export class UserService {
     }));
   }
 
-  gravatarLink(): string{
+  gravatarLink(): string {
     return "https://www.gravatar.com/avatar/" + md5(this._auth.email.toLowerCase(), 'hex');
   }
 
@@ -46,23 +50,31 @@ export class UserService {
    * Pega a referência do usuário no banco de dados.
    * @returns Observable.
    */
-  userObservable(): FirebaseObjectObservable<any>{
+  userObservable(): FirebaseObjectObservable<any> {
     return this.afDB.object(`users/${this._auth.uid}`);
   }
 
-  history(): FirebaseListObservable<any>{
+  history(): FirebaseListObservable<any> {
     return this.afDB.list(`users/${this._auth.uid}/saldo_history`);
+  }
+
+  addHistory(type: string, description: string): firebase.Promise<any> {
+    return firebase.database().ref(`users/${this._auth.uid}/saldo_history`).push({
+      type: type,
+      description: description,
+      timestamp: moment().valueOf()
+    })
   }
 
 
   /**
    * Retorna o saldo do usuário logado.
    */
-  getSaldo(): firebase.Promise<any>{
+  getSaldo(): firebase.Promise<any> {
     return firebase.database().ref(`users/${this._auth.uid}/saldo`).transaction(saldo => saldo);
   }
 
-  isVeg(): firebase.Promise<any>{
+  isVeg(): firebase.Promise<any> {
     return firebase.database().ref(`users/${this._auth.uid}/veg`).once('value');
   }
 
@@ -75,7 +87,7 @@ export class UserService {
    * - Usuário não comprou a refeição
    * - Está dentro do tempo estipulado.
    */
-  canBuy(refeicao: any): Rx.Observable<any>{
+  canBuy(refeicao: any): Rx.Observable<any> {
     let subject = new Rx.Subject<any>();
 
     let vagas: Number;
@@ -89,8 +101,8 @@ export class UserService {
     const p4 = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(
       count => count); //RefeicaoService not working
 
-    Promise.all([p1,p2,p3,p4])
-      .then(values =>{
+    Promise.all([p1, p2, p3, p4])
+      .then(values => {
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
@@ -98,11 +110,11 @@ export class UserService {
         bought = values[2];
         isQueueEmpty = values[3].snapshot.val() == 0;
         //Verificar se as condições são verdadeiras
-        if(vagas > 0)
-          if(saldo > 0)
-            if(!bought)
-              if(isQueueEmpty)
-                if(this._time.isAllowed(refeicao.timestamp)){
+        if (vagas > 0)
+          if (saldo > 0)
+            if (!bought)
+              if (isQueueEmpty)
+                if (this._time.isAllowed(refeicao.timestamp)) {
                   subject.next(true);
                   subject.complete();
                 }
@@ -118,7 +130,7 @@ export class UserService {
           subject.next('Sem vagas');
       })
       .catch(error => console.log('error in UserService canBuy()', error));
-    
+
     return subject;
   }
 
@@ -131,7 +143,7 @@ export class UserService {
    * - Usuário não está na fila
    * - Está dentro do tempo estipulado.
    */
-  canQueue(refeicao: any): Rx.Observable<any>{
+  canQueue(refeicao: any): Rx.Observable<any> {
     let subject = new Rx.Subject<any>();
 
     let vagas: Number;
@@ -143,8 +155,8 @@ export class UserService {
     const p3 = this.isQueued(refeicao);
     const p4 = this.bought(refeicao);
 
-    Promise.all([p1,p2,p3,p4])
-      .then(values =>{
+    Promise.all([p1, p2, p3, p4])
+      .then(values => {
         //values[0] é o resultado de p1, que é o n de vagas
         //values[1] é o resultado de p2, que é o saldo.
         vagas = values[0].snapshot.val();
@@ -153,11 +165,11 @@ export class UserService {
         bought = values[3];
 
         //Verificar se as condições são verdadeiras
-        if(vagas == 0)
-          if(saldo > 0)
-            if(!isQueued)
-              if(!bought)
-                if(this._time.isAllowed(refeicao.timestamp)){
+        if (vagas == 0)
+          if (saldo > 0)
+            if (!isQueued)
+              if (!bought)
+                if (this._time.isAllowed(refeicao.timestamp)) {
                   //TODO: verificar se o tempo para entrar na fila é o mesmo para comprar a refeição
                   subject.next(true);
                   subject.complete();
@@ -169,17 +181,17 @@ export class UserService {
         else subject.next(false);
       })
       .catch(error => console.log('error in UserService canBuy()', error));
-    
+
     return subject;
   }
-  
+
   /**
    * Tira uma unidade do saldo do usuário
    * @returns Promise
    */
   debitSaldo(): firebase.Promise<any> {
     return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
-      .transaction( saldo => { return saldo - 1; });
+      .transaction(saldo => { return saldo - 1; });
   }
 
   /**
@@ -187,7 +199,7 @@ export class UserService {
    */
   incrementSaldo(): firebase.Promise<any> {
     return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
-      .transaction( saldo => saldo + 1);
+      .transaction(saldo => saldo + 1);
   }
 
   /**
@@ -200,7 +212,7 @@ export class UserService {
     return new firebase.Promise((resolve, reject) => {
       firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`)
         .once('value', snapshot => {
-            resolve(snapshot.val() !== null);
+          resolve(snapshot.val() !== null);
         })
     });
   }
@@ -216,11 +228,11 @@ export class UserService {
   /**
    * Verifica se o usuário já esta na fila de espera da refeição.
    */
-  isQueued(refeicao: any): firebase.Promise<any>{
+  isQueued(refeicao: any): firebase.Promise<any> {
     return new firebase.Promise((resolve, reject) => {
       firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`)
         .once('value', snapshot => {
-            resolve(snapshot.val() !== null);
+          resolve(snapshot.val() !== null);
         })
     });
   }
@@ -229,17 +241,25 @@ export class UserService {
    * Adiciona a refeição na fila do usuário.
    * @param refeicao A refeição a ser adicionada.
    */
-  addToQueue(refeicao: any, pos: Number): firebase.Promise<any>{
+  addToQueue(refeicao: any, pos: Number): firebase.Promise<any> {
     return Promise.all([
       firebase.database().ref(`users/${this._auth.uid}/queue`).child(refeicao.$key).set(pos),
-      this.debitSaldo() ]);
+      this.debitSaldo()]);
   }
 
-  removeRefeicao(refeicao: any): firebase.Promise<any>{
+  /**
+   * Remove a refeição no caminho do usuário.
+   * @param refeicao A refeição a ser removida.
+   */
+  removeRefeicao(refeicao: any): firebase.Promise<any> {
     return firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`).remove();
   }
 
-  removeQueue(refeicao: any): firebase.Promise<any>{
+  /**
+   * Remove a refeição no caminho da fila do usuário.
+   * @param refeicao A refeição a ser removida.
+   */
+  removeQueue(refeicao: any): firebase.Promise<any> {
     return firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`).remove();
   }
 

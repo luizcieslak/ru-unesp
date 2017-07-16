@@ -85,7 +85,7 @@ export class RefeicaoService {
   }
 
   /**
-   * Promise que faz uma transaction no contador de usuários da refeição
+   * Promise que faz uma incrementa o contador de usuários da refeição
    * @param refeicao A refeição a ser manipulada
    * @param {boolean} isVeg Usuário vegetariano? 
   */
@@ -113,10 +113,10 @@ export class RefeicaoService {
 
   subtractVagas(refeicao: any): firebase.Promise<any> {
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
-    return new firebase.Promise((resolve,reject) =>{
+    return new firebase.Promise((resolve, reject) => {
       firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
         .transaction(vagas => {
-          if (vagas > 0){
+          if (vagas > 0) {
             resolve(true);
             return vagas - 1;
           } else {
@@ -132,7 +132,7 @@ export class RefeicaoService {
    * Pega a posição do usuário a ser adicionado na fila baseado no contador.
    * @param refeicao A refeição selecionada
    */
-  getUserPos(refeicao:any): firebase.Promise<any>{
+  getUserPos(refeicao: any): firebase.Promise<any> {
     return firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(count => count);
   }
 
@@ -152,19 +152,19 @@ export class RefeicaoService {
         } else {
           //Pegar a posição do usuário
           this.getUserPos(refeicao)
-            .then(count =>{
+            .then(count => {
               const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
               const refeicaoQueue = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue`)
                 .child(this._auth.uid).set(pos);
               const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(count => count + 1);
-              const userQueue = this._user.addToQueue(refeicao,pos);
+              const userQueue = this._user.addToQueue(refeicao, pos);
               //Debitar o saldo do usuário
               resolve(Promise.all([refeicaoQueue, queueCount, userQueue]));
             })
             .catch(reason => console.log(reason));
         }
-      })   
+      })
     })
   }
 
@@ -207,21 +207,21 @@ export class RefeicaoService {
    * @param {any} refeicao A refeição selecionada.
    */
   removeQueue(refeicao: any): firebase.Promise<any> {
-    return new firebase.Promise((resolve,reject) =>{
-        if(this.time.isAllowed(refeicao.timestamp)){
-          //Remover o usuário da da fila
-          const removeUser = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue/${this._auth.uid}`).remove();
-          //decrementar o contador da fila
-          const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(queue => queue - 1);
-          //Remover a refeição do usuário
-          const removeQueue = this._user.removeQueue(refeicao);
-          //TODO: Verificar se esse reembolso precisa ser feito na Firebase Functions.
-          const incrementSaldo = this._user.incrementSaldo();
+    return new firebase.Promise((resolve, reject) => {
+      if (this.time.isAllowed(refeicao.timestamp)) {
+        //Remover o usuário da da fila
+        const removeUser = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue/${this._auth.uid}`).remove();
+        //decrementar o contador da fila
+        const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(queue => queue - 1);
+        //Remover a refeição do usuário
+        const removeQueue = this._user.removeQueue(refeicao);
+        //TODO: Verificar se esse reembolso precisa ser feito na Firebase Functions.
+        const incrementSaldo = this._user.incrementSaldo();
 
-          resolve(Promise.all([removeUser, queueCount, removeQueue, incrementSaldo]));
-        }else{
-          reject(new Error('not allowed'));
-        }
+        resolve(Promise.all([removeUser, queueCount, removeQueue, incrementSaldo]));
+      } else {
+        reject(new Error('not allowed'));
+      }
     })
   }
 }

@@ -17,7 +17,8 @@ export class ProfilePage {
   history: FirebaseListObservable<any>;
 
   constructor(public navCtrl: NavController, private _auth: AuthService,
-  private _user: UserService) {
+    private _user: UserService) {
+    //Retrieve data
     this.user = this._user.userObservable();
     this.profilePicture = this._user.gravatarLink();
     this.history = this._user.history();

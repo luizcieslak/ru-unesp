@@ -42,6 +42,9 @@ export class ParallaxHeader {
     });
   }
 
+  /**
+   * Função que é chamada sempre que um evento de scroll é ativado, criando o efeito paralaxe.
+   */
   updateParallaxHeader(ev) {
     if (ev.scrollTop >= 0) {
       this.translateAmt = ev.scrollTop / 2;

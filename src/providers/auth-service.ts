@@ -14,59 +14,59 @@ export class AuthService {
   constructor(private afAuth: AngularFireAuth) {
     afAuth.authState.subscribe(user => {
       if (!user) {
-        this.displayName = null;        
+        this.displayName = null;
         return;
       }
-      this.displayName = user.displayName;      
+      this.displayName = user.displayName;
     });
   }
 
   /**
    * @returns true if user is authenticated.
    */
-  get autenthicated(): boolean{
+  get autenthicated(): boolean {
     return this.afAuth.authState !== null;
   }
 
   /**
    * @returns user's uid.
    */
-  get uid(): string{
-    return this.afAuth.authState !== null? this.afAuth.auth.currentUser.uid : null;
+  get uid(): string {
+    return this.afAuth.authState !== null ? this.afAuth.auth.currentUser.uid : null;
   }
 
   /**
    * @returns user's email.
    */
-  get email(): string{
-    return this.afAuth.authState !== null? this.afAuth.auth.currentUser.email : null;
+  get email(): string {
+    return this.afAuth.authState !== null ? this.afAuth.auth.currentUser.email : null;
   }
 
   /**
    * Sign in into Firebase using Email.
    * @returns Firebase Promise.
    */
-  signInWithEmail(email: string, password: string): firebase.Promise<any>{
-    return this.afAuth.auth.signInWithEmailAndPassword(email,password);
+  signInWithEmail(email: string, password: string): firebase.Promise<any> {
+    return this.afAuth.auth.signInWithEmailAndPassword(email, password);
   }
 
-  signOut(): firebase.Promise<any>{
+  signOut(): firebase.Promise<any> {
     return this.afAuth.auth.signOut();
   }
-  
+
   /**
    * Sign up into Firebase using Email.
    * @returns Firebase Promise.
    */
-  signUp(email: string, password: string): firebase.Promise<any>{
-    return this.afAuth.auth.createUserWithEmailAndPassword(email,password);
+  signUp(email: string, password: string): firebase.Promise<any> {
+    return this.afAuth.auth.createUserWithEmailAndPassword(email, password);
   }
 
   /**
    * Reset user's password using Firebase mail system.
    * @returns Firebase Promise.
    */
-  resetPassword(email: string): firebase.Promise<any>{
+  resetPassword(email: string): firebase.Promise<any> {
     return this.afAuth.auth.sendPasswordResetEmail(email);
   }
 
