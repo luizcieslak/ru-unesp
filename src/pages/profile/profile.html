@@ -23,7 +23,7 @@
       Histórico de Transações
     </ion-list-header>
     <ion-item *ngFor="let h of history | async">
-      <h3>{{h.type | titleCase}} - {{h.timestamp | format: 'lll'}}</h3>
+      <h3>{{h.type | titleCase}} - {{h.timestamp | format: 'L'}} - {{ h.timestamp | fromNow }}</h3>
       <p text-wrap>{{h.description}}</p>
     </ion-item>
   </ion-list>

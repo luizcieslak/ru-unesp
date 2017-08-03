@@ -55,14 +55,19 @@ export class UserService {
   }
 
   history(): FirebaseListObservable<any> {
-    return this.afDB.list(`users/${this._auth.uid}/saldo_history`);
+    return this.afDB.list(`users/${this._auth.uid}/saldo_history`,{
+      query:{
+        orderByChild: 'reverseTimestamp'
+      }
+    });
   }
 
   addHistory(type: string, description: string): firebase.Promise<any> {
     return firebase.database().ref(`users/${this._auth.uid}/saldo_history`).push({
       type: type,
       description: description,
-      timestamp: moment().valueOf()
+      timestamp: moment().valueOf(),
+      reverseTimestamp: Number.MAX_SAFE_INTEGER - moment().valueOf()
     })
   }
 
