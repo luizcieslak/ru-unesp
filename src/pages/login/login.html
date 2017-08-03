@@ -22,22 +22,22 @@
                 <ion-input formControlName="email" type="text"></ion-input>
             </ion-item>
 
-            <p *ngIf="submitAttempt && loginForm.controls.email.hasError('required')" style="color: #ea6153;" padding>
-                Email Obrigatório.
-            </p>
-            <p *ngIf="submitAttempt && loginForm.controls.email.hasError('invalidEmail')" style="color: #ea6153;" padding>
-                Email Inválido.
-            </p>
 
             <ion-item>
                 <ion-label floating>Password</ion-label>
                 <ion-input formControlName="password" type="password"></ion-input>
             </ion-item>
-            <p *ngIf="submitAttempt && loginForm.controls.password.hasError('required')" style="color: #ea6153;" padding>
-                Senha Obrigatória.
-            </p>
         </form>
-
+        
+        <p *ngIf="submitAttempt && loginForm.controls.password.hasError('required')" style="color: #ea6153;">
+            Senha Obrigatória.
+        </p>
+        <p *ngIf="submitAttempt && loginForm.controls.email.hasError('required')" style="color: #ea6153;">
+            Email Obrigatório.
+        </p>
+        <p *ngIf="submitAttempt && loginForm.controls.email.hasError('invalidEmail')" style="color: #ea6153;">
+            Email Inválido.
+        </p>
         <p *ngIf="submitAttempt && loginError" style="color: #ea6153;">{{ loginError }}</p>
 
     </ion-list>
@@ -46,15 +46,15 @@
     <button (click)="login()" ion-button block>Login</button>
     <div text-center>
         <button (click)="resetPass()" ion-button clear small fab-center>Esqueceu a senha?</button>
-        <br>ou<br>
-        <button (click)="signup()" ion-button clear>Crie uma conta</button>
+        <!-- <br>ou<br>
+        <button (click)="signup()" ion-button clear>Crie uma conta</button> -->
     </div>
     <br>
-    
+
     <br>
     <button (click)="help()" ion-button clear>Ajuda</button>
     <button (click)="fastLogin()" ion-button clear>FAST LOGIN</button>
     <button (click)="vegLogin()" ion-button dark>veg login</button>
-    
+
 
 </ion-content>
