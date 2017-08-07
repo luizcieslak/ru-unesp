@@ -9,25 +9,124 @@ import { AuthService } from './auth-service';
 //import firebase namespace for functions that aren't in AngularFire2
 import * as firebase from 'firebase/app';
 
+import { Observable } from "rxjs/Rx";
+
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/take';
+
+
+//moment.js library for handling timestamps
+import * as moment from 'moment';
+import 'moment/locale/pt-br';
+
+const pageLength = 5;
+
 @Injectable()
 export class RefeicaoService {
 
+  nextPageCursor: any;
+  pages = [];
+  currentPage: number;
+
   constructor(private db: AngularFireDatabase, private time: TimeService,
     private _user: UserService, private _auth: AuthService) {
+    this.currentPage = 0;
   }
 
   /**
-   * Retorna as próximas refeições a partir do dia atual.
+   * Retorna a próxima página de refeições de acordo com a constante pageLength
    */
-  nextRefeicoes(): FirebaseListObservable<any> {
-    const now = this.time.localTimestamp();
-    return this.db.list('/refeicoes', {
-      query: {
-        orderByChild: 'timestamp',
-        startAt: now
+  nextPage(): Observable<any> {
+
+    return Observable.create(subscriber => {
+      //Inicialização das variáveis
+      const now = this.time.localTimestamp();
+      let query: Observable<any>;
+
+      console.log('searching for the next page. cursor:', this.nextPageCursor);
+
+      //Realizar a query com ou sem o cursor.
+      if (this.nextPageCursor == undefined) {
+        query = this.db.list('/refeicoes', {
+          query: {
+            orderByChild: 'timestamp',
+            startAt: now,
+            limitToFirst: pageLength + 1 //+1 para guardar o último como cursor
+          }
+        });
+      } else {
+        query = this.db.list('/refeicoes', {
+          query: {
+            orderByChild: 'timestamp',
+            startAt: this.nextPageCursor.timestamp, //Como o cursor existe, começar a query por ele
+            limitToFirst: pageLength + 1 //+1 para guardar o último como cursor
+          }
+        });
       }
+
+      //Subscribe na query para retirar a última refeição
+      //e colocá-la como cursos
+      query.take(1).subscribe(result => {
+        this.nextPageCursor = result[result.length - 1];
+        console.log('new cursor', moment(this.nextPageCursor.timestamp).format('LLLL'));
+        if (result.length > pageLength) {
+          //retirar a ultima entrada
+          this.nextPageCursor = result.pop();
+          result.lastPage = false;
+        }
+
+        //armazenar a página no array pages[]
+        this.pages.push(result);
+        console.log('new page',this.currentPage, this.pages[this.currentPage]);
+        //Atualizar a flag 'currentPage'
+        this.currentPage++;
+        
+
+        //verificar se há uma próxima página para mostrar na UI
+        this.db.list('/refeicoes', {
+          query: {
+            orderByChild: 'timestamp',
+            startAt: moment(this.nextPageCursor.timestamp).add(1, 'days').valueOf(), //o próximo dia
+            limitToFirst: 1 //se houver pelo menos uma entrada, há uma nova página
+          }
+        }).take(1).subscribe(nextpage =>{
+          result.lastPage = nextpage.length == 0;
+          //Enviar os resultados para a Observable
+          subscriber.next(result);
+          subscriber.complete();
+        });
+
+      })
+
     })
+
+
   }
+
+  /**
+   * Retorna a página anterior de refeições de acordo com a constante pageLength
+   */
+  previousPage(): Observable<any> {
+    return Observable.create(subscriber => {
+      //Atualizar a flag 'currentPage'
+      this.currentPage -= 1;
+      //Atualizar o cursor da próxima página
+      this.nextPageCursor = this.pages[this.currentPage][0];
+
+      //Sinalizar caso seja a primeira página
+      if(this.currentPage == 0){
+        this.pages[this.currentPage].firstPage = true;
+      }
+
+      //Enviar os resultados para a Observable.
+      subscriber.next(this.pages[this.currentPage]);
+      subscriber.complete();
+    })
+
+  }
+
+
 
   /**
    * Pega a referência da refeição no banco de dados.

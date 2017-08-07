@@ -5,55 +5,71 @@
   Ionic pages and navigation.
 -->
 <ion-header>
-    <ion-navbar>
-        <button ion-button menuToggle>
+  <ion-navbar>
+    <button ion-button menuToggle>
           <ion-icon name="menu"></ion-icon>
         </button>
-        <ion-title>Próximas Refeições</ion-title>
-    </ion-navbar>
+    <ion-title>Próximas Refeições</ion-title>
+  </ion-navbar>
 </ion-header>
 
 
 <ion-content padding>
 
-<p *ngIf="empty" text-center>Não há refeições para as próximas semanas.</p>
 
-<ion-card *ngFor="let r of (refeicoes | async) ; let i = index"> 
-  <img src="assets/ru.png"/>
-  <ion-card-content>
-    <ion-card-title>
-      {{r. timestamp | format: 'LL' }}
+  <ion-card *ngFor="let r of (refeicoes | async) ; let i = index">
+    <img src="assets/ru.png" />
+    <ion-card-content>
+      <ion-card-title>
+        {{r. timestamp | format: 'LL' }}
       </ion-card-title>
-    <p>
-      {{r.base1}}, {{r.base2}}, {{r.principal}} e {{r.veg}} (opcao vegetariana).
-    </p>
-  </ion-card-content>
-  <ion-item>
+      <p>
+        {{r.base1}}, {{r.base2}}, {{r.principal}} e {{r.veg}} (opcao vegetariana).
+      </p>
+    </ion-card-content>
+    <ion-item>
       <ion-icon item-start name="people" item-start style="color: #d03e84; padding-right: 8px"></ion-icon>
       Vagas
       <ion-badge item-right>{{ r.vagas }}</ion-badge>
-  </ion-item>
-  <button ion-item *ngIf="canBuy[i]" (click)="confirmBook(r)">
+    </ion-item>
+    <button ion-item *ngIf="canBuy[i]" (click)="confirmBook(r)">
       <ion-icon item-start name="cart" item-start style="color: #488aff; padding-right: 8px"></ion-icon>
         Reservar
   </button>
-  <button ion-item *ngIf="canQueue[i]" (click)="confirmQueue(r)">
+    <button ion-item *ngIf="canQueue[i]" (click)="confirmQueue(r)">
       <ion-icon item-start name="clock" item-start style="color: #488aff; padding-right: 8px"></ion-icon>
         Entrar na fila de espera
       <ion-badge item-right>{{ r.queue_count }}</ion-badge>
   </button>
-  <ion-item *ngIf="!(canBuy[i] || canQueue[i])">
+    <ion-item *ngIf="!(canBuy[i] || canQueue[i])">
       <ion-icon item-start name="alert" item-start style="color: #f53d3d; padding-right: 8px" *ngIf="!boughtOrQueued[i]"></ion-icon>
       <ion-icon item-start name="checkmark-circle" item-start style="color: #32db64; padding-right: 8px" *ngIf="boughtOrQueued[i]"></ion-icon>
-        {{ message[i] }}
-  </ion-item>
-  <button ion-item (click)="gotoDetails(r)">
+      {{ message[i] }}
+    </ion-item>
+    <button ion-item (click)="gotoDetails(r)">
       <ion-icon item-start name="information-circle" item-start style="color: #000000; padding-right: 8px"></ion-icon>
         Ver mais detalhes
   </button>
 
-</ion-card>
+  </ion-card>
 
-
-
+  <br><br>
+  <p *ngIf="empty" text-center>Não há refeições para os próximos dias</p>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons start>
+      <button ion-button icon-left (click)="previousPage()" [disabled]="!canGoBack">
+        <ion-icon name="arrow-back"></ion-icon>
+         Anterior
+      </button>
+    </ion-buttons>
+    <ion-buttons end>
+      <button ion-button icon-right (click)="nextPage()" [disabled]="empty">
+        Próxima
+        <ion-icon name="arrow-forward"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

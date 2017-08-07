@@ -5,6 +5,9 @@ import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/databa
 
 import { RefeicaoDetailPage } from '../refeicao-detail/refeicao-detail';
 
+import { Observable } from "rxjs/Rx";
+
+
 //moment.js library for handling timestamps
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
@@ -21,9 +24,10 @@ import { HomePage } from '../home/home';
 })
 export class RefeicaoListPage {
 
-  refeicoes: FirebaseListObservable<any>; //refeicoes array.
+  refeicoes: Observable<any>; //refeicoes array.
   loading: Loading;                       //loading component.
   empty: boolean;
+  canGoBack: boolean = false;
   canBuy: Array<boolean> = [];
   canQueue: Array<boolean> = [];
   message: Array<string> = [];
@@ -38,47 +42,9 @@ export class RefeicaoListPage {
     this.loading = this.loadingCtrl.create();
     this.loading.present();
 
-    //Pegar a lista de refeições de maneira assíncrona
-    this.refeicoes = this._refeicao.nextRefeicoes();
-
-    //Assim que os dados forem carregados, fechar o loading component.
-    this.refeicoes.subscribe(snapshots => {
-      //checar se o array snapshots é vazio
-      this.empty = snapshots.length == 0;
-      //para cada refeicao, verificar se pode comprar e pode entrar na fila
-      snapshots.forEach((snapshot, index) => {
-
-        //iniciar as variaveis canBuy e canQueue
-        const obs1 = this._user.canBuy(snapshot);
-        obs1.subscribe(result => {
-
-          //Se result for uma string, então ocorreu algum problema
-          if (typeof result === 'string' || result instanceof String) {
-            this.canBuy[index] = false;
-            this.message[index] = result as string;
-          } else {
-            this.canBuy[index] = result;
-          }
-
-          const obs2 = this._user.canQueue(snapshot);
-          obs2.subscribe(result => {
-            //Se result for uma string, então ocorreu algum problema
-            if (typeof result === 'string' || result instanceof String) {
-              this.canQueue[index] = false;
-              this.message[index] = result as string;
-            } else {
-              this.canQueue[index] = result;
-            }
-
-            this.boughtOrQueued[index] = this.message[index] == 'Comprado' || this.message[index] == 'Entrou na fila';
-            console.log(moment(snapshot.timestamp).calendar(), 'canBuy?', this.canBuy[index], 'canQueue?', this.canQueue[index]);
-          })
-        })
-
-      });
-      this.loading.dismiss();
-    });
-
+    //buscar a próxima página de refeições
+    this.nextPage(true);
+    this.loading.dismiss(); 
   }
 
   /**
@@ -188,6 +154,77 @@ export class RefeicaoListPage {
         alert.present();
       })
       .catch(error => console.log('error in queue()', error));
+  }
+
+  nextPage(firstPage?: boolean): void {
+
+    //Pegar a lista de refeições de maneira assíncrona
+    this.refeicoes = this._refeicao.nextPage()
+    //dar um share() para que a função não seja chamada 2x.
+    .share();
+
+    //Assim que os dados forem carregados, fechar o loading component.
+    this.refeicoes.subscribe(snapshots => {
+      //checar se o array snapshots é vazio ou se é a ultima página
+      this.empty = snapshots.length == 0 || snapshots.lastPage;
+      console.log('empty?', this.empty)
+
+      if (!firstPage) {
+        this.canGoBack = true;
+      }
+      //para cada refeicao, verificar se pode comprar e pode entrar na fila
+      snapshots.forEach((snapshot, index) => {
+        this.checkAvailability(snapshot, index);
+      });
+    });
+  }
+
+  previousPage(): void {
+
+    //Pegar a lista de refeições de maneira assíncrona
+    this.refeicoes = this._refeicao.previousPage();
+
+    //Assim que os dados forem carregados, fechar o loading component.
+    this.refeicoes.subscribe(snapshots => {
+      //mudar a flag 'empty' para falso, já que voltamos a página que tem conteúdo.
+      this.empty = false;
+      //Verificar se a página requisitada é a primeira.
+      this.canGoBack = snapshots.firstPage;
+      console.log('empty?', this.empty)
+      //para cada refeicao, verificar se pode comprar e pode entrar na fila
+      snapshots.forEach((snapshot, index) => {
+        this.checkAvailability(snapshot, index);
+      });
+    });
+  }
+
+  checkAvailability(snapshot: any, index: number) {
+    //iniciar as variaveis canBuy e canQueue
+    const obs1 = this._user.canBuy(snapshot);
+    obs1.subscribe(result => {
+
+      //Se result for uma string, então ocorreu algum problema
+      if (typeof result === 'string' || result instanceof String) {
+        this.canBuy[index] = false;
+        this.message[index] = result as string;
+      } else {
+        this.canBuy[index] = result;
+      }
+
+      const obs2 = this._user.canQueue(snapshot);
+      obs2.subscribe(result => {
+        //Se result for uma string, então ocorreu algum problema
+        if (typeof result === 'string' || result instanceof String) {
+          this.canQueue[index] = false;
+          this.message[index] = result as string;
+        } else {
+          this.canQueue[index] = result;
+        }
+
+        this.boughtOrQueued[index] = this.message[index] == 'Comprado' || this.message[index] == 'Entrou na fila';
+        console.log(moment(snapshot.timestamp).calendar(), 'canBuy?', this.canBuy[index], 'canQueue?', this.canQueue[index]);
+      })
+    })
   }
 
 }
