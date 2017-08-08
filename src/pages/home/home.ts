@@ -26,9 +26,7 @@ export class HomePage {
   user: FirebaseObjectObservable<any>;
   isVeg: boolean;
   refeicoes: Observable<Array<{}>>;
-  refeicoesLength: number;
   queueRefeicoes: Observable<Array<{}>>;
-  queueLength: number;
 
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
@@ -69,7 +67,6 @@ export class HomePage {
             })
             return data;
           })
-          .do(val => this.refeicoesLength = val.length)
       }
       //repetir o mesmo processo para as refeições na lista de espera
       if (user.queue) {
@@ -98,7 +95,6 @@ export class HomePage {
             })
             return data;
           })
-          .do(val => this.queueLength = val.length)
       }
 
       this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
