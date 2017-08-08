@@ -158,20 +158,23 @@ export class RefeicaoListPage {
 
   nextPage(firstPage?: boolean): void {
 
-    //Pegar a lista de refeições de maneira assíncrona
-    this.refeicoes = this._refeicao.nextPage()
-    //dar um share() para que a função não seja chamada 2x.
-    .share();
+    if (firstPage) {
+      //Pegar a lista de refeições de maneira assíncrona
+      this.refeicoes = this._refeicao.nextPage(true) //true para a flag firstPage
+      //dar um share() para que a função não seja chamada 2x.
+      .share();
+    }else{
+        this.canGoBack = true;
+        this.refeicoes = this._refeicao.nextPage()
+        .share();
+    }
 
-    //Assim que os dados forem carregados, fechar o loading component.
+
     this.refeicoes.subscribe(snapshots => {
       //checar se o array snapshots é vazio ou se é a ultima página
       this.empty = snapshots.length == 0 || snapshots.lastPage;
       console.log('empty?', this.empty)
 
-      if (!firstPage) {
-        this.canGoBack = true;
-      }
       //para cada refeicao, verificar se pode comprar e pode entrar na fila
       snapshots.forEach((snapshot, index) => {
         this.checkAvailability(snapshot, index);

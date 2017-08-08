@@ -34,8 +34,11 @@ export class RefeicaoService {
   /**
    * Retorna a próxima página de refeições de acordo com a constante pageLength
    */
-  nextPage(): Observable<any> {
-
+  nextPage(firstPage? : boolean): Observable<any> {
+    if(firstPage){
+      this.currentPage = 0;
+      this.nextPageCursor = undefined;
+    } 
     return Observable.create(subscriber => {
       //Inicialização das variáveis
       const now = this.time.localTimestamp();
