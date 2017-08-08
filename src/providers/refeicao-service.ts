@@ -212,12 +212,15 @@ export class RefeicaoService {
     return new firebase.Promise((resolve, reject) => {
       firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
         .transaction(vagas => {
+          console.log('subtractVagas()', vagas)
           if (vagas > 0) {
             resolve(true);
             return vagas - 1;
-          } else {
+          } else if (vagas == 0) {
             //TODO: ativar a flag sold_out aqui.
             reject(new Error('Vagas = 0 '));
+            return vagas;
+          } else { // == null
             return vagas;
           }
         });
