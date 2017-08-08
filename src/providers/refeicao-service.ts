@@ -11,10 +11,7 @@ import * as firebase from 'firebase/app';
 
 import { Observable } from "rxjs/Rx";
 
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/take';
-
 
 //moment.js library for handling timestamps
 import * as moment from 'moment';

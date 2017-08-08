@@ -11,8 +11,8 @@
 
   <ion-list>
     <ion-item-divider> Próximas refeições</ion-item-divider>
-    <ion-item *ngFor="let r of refeicoes" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
-      {{ r.timestamp | format:'LL' }}
+    <ion-item *ngFor="let r of refeicoes | async" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
+      {{ r.timestamp| format:'LL'}}
       <ion-icon item-right small [name]="isGroupShown(r) ? 'arrow-dropdown' : 'arrow-dropright'"></ion-icon>
       <div *ngIf="isGroupShown(r)">
         <br>
@@ -31,7 +31,7 @@
 
    <ion-list>
     <ion-item-divider>Filas de espera</ion-item-divider>
-    <ion-item *ngFor="let r of queueRefeicoes" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
+    <ion-item *ngFor="let r of queueRefeicoes | async" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
       {{ r.timestamp | format:'LL' }}
       <ion-icon item-right small [name]="isGroupShown(r) ? 'arrow-dropdown' : 'arrow-dropright'"></ion-icon>
       <div *ngIf="isGroupShown(r)">

@@ -12,6 +12,8 @@ import { RefeicaoService } from '../../providers/refeicao-service';
 import { AuthService } from '../../providers/auth-service';
 import { UserService } from '../../providers/user-service';
 
+import { Observable, Subject } from "rxjs/Rx";
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -23,11 +25,8 @@ export class HomePage {
 
   user: FirebaseObjectObservable<any>;
   isVeg: boolean;
-  refeicoesKey: Array<any>;
-  refeicoes: Array<any> = [];
-
-  queueKey: Array<any>;
-  queueRefeicoes: Array<any> = [];
+  refeicoes: Observable<Array<{}>>;
+  queueRefeicoes: Observable<Array<{}>>;
 
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
@@ -39,37 +38,59 @@ export class HomePage {
     this.loading.present();
 
     //Observable do Usuário
-    this.user = this.afDB.object('/users/' + this._auth.uid);
+    this.user = this.afDB.object(`/users/${this._auth.uid}`);
     this.user.subscribe(user => {
       this.isVeg = user.veg;
       if (user.refeicoes) {
-        //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
-        this.refeicoesKey = Object.keys(user.refeicoes);
-        //Resetar o array caso haja alguma atualização.
-        this.refeicoes = [];
-        this.refeicoesKey.forEach(key => { //então, para cada chave
-          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`); //pegar outras informações da refeição
-          refeicaoObservable.subscribe(refeicao => {
-            this.refeicoes.push(refeicao); //e dar um push para o array.
-          })
-        })
-      }
+        this.refeicoes = Observable.of(user.refeicoes)
+          .map(obj => {
+            let arr = [];
+            Object.keys(obj).forEach((key) => {
+              //get an Observable containing the info for each key in user.refeicoes object.
+              arr.push(this.afDB.object(`refeicoes/${key}`));
+            })
 
+            //zip() all Observables in the array
+            let zip = Observable.zip(...arr);
+            return zip;
+          })
+          //use switchMap() to flatten the Observables
+          .switchMap(val => val)
+          //Sort the data by it timestamp.
+          .map(data => {
+            data.sort((a, b) => {
+              return a['timestamp'] < b['timestamp'] ? -1 : 1;
+            })
+            return data;
+          })
+      }
       //repetir o mesmo processo para as refeições na lista de espera
       if (user.queue) {
-        this.queueKey = Object.keys(user.queue);
-        this.queueKey.forEach(key => {
-          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`);
-          refeicaoObservable.subscribe(refeicao => {
-            this.queueRefeicoes.push(refeicao);
+        this.queueRefeicoes = Observable.of(user.queue)
+          .map(obj => {
+            let arr = [];
+            Object.keys(obj).forEach((key) => {
+              //get an Observable containing the info for each key in user.refeicoes object.
+              arr.push(this.afDB.object(`refeicoes/${key}`));
+            })
+
+            //zip() all Observables in the array
+            let zip = Observable.zip(...arr);
+            return zip;
           })
-        })
+          //use switchMap() to flatten the Observables
+          .switchMap(val => val)
+          //Sort the data by it timestamp.
+          .map(data => {
+            data.sort((a, b) => {
+              return a['timestamp'] < b['timestamp'] ? -1 : 1;
+            })
+            return data;
+          });
       }
 
       this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
-
-
   }
 
   /**
