@@ -54,9 +54,18 @@ export class UserService {
     return this.afDB.object(`users/${this._auth.uid}`);
   }
 
+  lastFiveHistory(): FirebaseListObservable<any> {
+    return this.afDB.list(`users/${this._auth.uid}/saldo_history`, {
+      query: {
+        orderByChild: 'reverseTimestamp',
+        limitToFirst: 5
+      }
+    });
+  }
+
   history(): FirebaseListObservable<any> {
-    return this.afDB.list(`users/${this._auth.uid}/saldo_history`,{
-      query:{
+    return this.afDB.list(`users/${this._auth.uid}/saldo_history`, {
+      query: {
         orderByChild: 'reverseTimestamp'
       }
     });

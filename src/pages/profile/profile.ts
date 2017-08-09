@@ -5,6 +5,8 @@ import { FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/d
 import { UserService } from '../../providers/user-service';
 import { AuthService } from '../../providers/auth-service';
 
+import { HistoryPage } from '../history/history';
+
 @Component({
   selector: 'page-profile',
   templateUrl: 'profile.html',
@@ -21,7 +23,11 @@ export class ProfilePage {
     //Retrieve data
     this.user = this._user.userObservable();
     this.profilePicture = this._user.gravatarLink();
-    this.history = this._user.history();
+    this.history = this._user.lastFiveHistory();
+  }
+
+  gotoHistory(): void {
+    this.navCtrl.push(HistoryPage);
   }
 
 }

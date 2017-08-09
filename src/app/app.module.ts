@@ -12,6 +12,7 @@ import { RefeicaoDetailPage } from '../pages/refeicao-detail/refeicao-detail';
 import { LoginPage } from '../pages/login/login';
 import { SignupPage } from '../pages/signup/signup';
 import { ProfilePage } from '../pages/profile/profile';
+import { HistoryPage } from '../pages/history/history';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -51,6 +52,7 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     LoginPage,
     SignupPage,
     ProfilePage,
+    HistoryPage,
     FormatPipe,
     TitleCasePipe,
     FromNowPipe,
@@ -75,7 +77,8 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     RefeicaoDetailPage,
     LoginPage,
     SignupPage,
-    ProfilePage
+    ProfilePage,
+    HistoryPage
   ],
   providers: [
     StatusBar,
