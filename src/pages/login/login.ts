@@ -129,7 +129,7 @@ export class LoginPage {
   help(): void {
     let help = this.alertCtrl.create({
       title: 'Ajuda',
-      subTitle: 'AJUDA LUCIANO',
+      subTitle: 'Este aplicativo é o aplicativo para compra de refeições do RU da UNESP Bauru. Para entrar, digite seu email e senha previamente cadastrados. Caso não tenha cadastro, vá ate a DTAd do campus para realizar o cadastro.',
       buttons: ['OK']
     });
     help.present();
@@ -155,8 +155,5 @@ export class LoginPage {
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
-
-
-
 
 }
