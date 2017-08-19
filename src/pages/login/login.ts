@@ -39,7 +39,7 @@ export class LoginPage {
 
     //TODO: Persistir login do usuário
     afAuth.authState.subscribe(auth => {
-      auth === null ? console.log('no auth') : this.navCtrl.setRoot(HomePage);
+      auth === null ? console.log('no auth') : this.onLoginSuccess();
     })
 
   }

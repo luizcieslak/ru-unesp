@@ -12,7 +12,7 @@ import { RefeicaoService } from '../../providers/refeicao-service';
 import { AuthService } from '../../providers/auth-service';
 import { UserService } from '../../providers/user-service';
 
-import { Observable, Subject } from "rxjs/Rx";
+import { Observable, Subject, Subscription } from "rxjs/Rx";
 
 @Component({
   selector: 'page-home',
@@ -24,6 +24,7 @@ export class HomePage {
   shownGroup = null; //Variável para a accordion list.
 
   user: FirebaseObjectObservable<any>;
+  userSub: Subscription;
   isVeg: boolean;
   refeicoes: Observable<Array<{}>>;
   queueRefeicoes: Observable<Array<{}>>;
@@ -39,7 +40,7 @@ export class HomePage {
 
     //Observable do Usuário
     this.user = this.afDB.object(`/users/${this._auth.uid}`);
-    this.user.subscribe(user => {
+    this.userSub = this.user.subscribe(user => {
       this.isVeg = user.veg;
       if (user.refeicoes) {
         this.refeicoes = Observable.of(user.refeicoes)
@@ -99,6 +100,10 @@ export class HomePage {
 
       this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
+  }
+
+  ionViewDidLeave(){
+    this.userSub.unsubscribe();
   }
 
   /**
