@@ -97,13 +97,14 @@ export class HomePage {
             return data;
           })
       }
-
+      
       this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
   }
 
   ionViewDidLeave(){
-    this.userSub.unsubscribe();
+    //this is giving a infinite loop in Loading component
+    //this.userSub.unsubscribe(); 
   }
 
   /**

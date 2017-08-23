@@ -42,6 +42,9 @@ import { HttpModule } from '@angular/http';
 //Parallax Header
 import { ParallaxHeader } from '../components/parallax-header/parallax-header';
 
+//Native storage
+import { NativeStorage } from '@ionic-native/native-storage';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -87,6 +90,7 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
     UserService,
     AuthService,
     TimeService,
+    NativeStorage,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

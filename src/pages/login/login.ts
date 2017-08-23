@@ -7,8 +7,8 @@ import { EmailValidator } from '../../validators/email';
 import { HomePage } from '../home/home';
 import { SignupPage } from '../signup/signup';
 
-//new imports
 import { AngularFireAuth } from 'angularfire2/auth';
+import { AuthService } from '../../providers/auth-service';
 
 @Component({
   selector: 'page-login',
@@ -28,7 +28,8 @@ export class LoginPage {
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
-    public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
+    public toastCtrl: ToastController, public events: Events, 
+    private _auth: AuthService, private afAuth: AngularFireAuth) {
 
     //Create FormBuilder with your inputs and their Validators.
     this.loginForm = this.formBuilder.group({
@@ -36,11 +37,13 @@ export class LoginPage {
       password: ['', Validators.required]
     });
 
-
-    //TODO: Persistir login do usuário
-    afAuth.authState.subscribe(auth => {
-      auth === null ? console.log('no auth') : this.onLoginSuccess();
-    })
+    //Persistir o login do usuário
+    this._auth.persistLogin()
+      .then( val => {
+        console.log(val)
+        this.onLoginSuccess()
+      })
+      .catch(reason => console.log(reason));
 
   }
 
@@ -51,7 +54,7 @@ export class LoginPage {
     this.submitAttempt = true;
     if (this.loginForm.valid) {
 
-      this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email, this.loginForm.value.password)
+      this._auth.signInWithEmail(this.loginForm.value.email, this.loginForm.value.password)
         .then(() => this.onLoginSuccess())  //  Se o login deu certo, executar onLoginSuccess
         .catch(error => { this.loginError = error.message }); //se não, mostre o erro. 
 
@@ -144,14 +147,14 @@ export class LoginPage {
 
   //função para o desenvolvimento
   fastLogin(): void {
-    this.afAuth.auth.signInWithEmailAndPassword("cieslakluiz@gmail.com", "123456")
+    this._auth.signInWithEmail("cieslakluiz@gmail.com", "123456")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
 
   //função para o desenvolvimento
   vegLogin(): void {
-    this.afAuth.auth.signInWithEmailAndPassword("luiz_cieslak@hotmail.com", "luizveg")
+    this._auth.signInWithEmail("luiz_cieslak@hotmail.com", "luizveg")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
