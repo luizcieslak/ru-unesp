@@ -45,6 +45,10 @@ import { ParallaxHeader } from '../components/parallax-header/parallax-header';
 //Native storage
 import { NativeStorage } from '@ionic-native/native-storage';
 
+import { Push } from '@ionic-native/push';
+
+import { FCM } from '@ionic-native/fcm';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -91,6 +95,8 @@ import { NativeStorage } from '@ionic-native/native-storage';
     AuthService,
     TimeService,
     NativeStorage,
+    Push,
+    FCM,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

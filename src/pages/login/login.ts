@@ -38,6 +38,7 @@ export class LoginPage {
     });
 
     //Persistir o login do usuário
+    //TODO: executar função abaixo somente na primeira vez.
     this._auth.persistLogin()
       .then( val => {
         console.log(val)

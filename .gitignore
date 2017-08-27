@@ -35,3 +35,4 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 
 /src/firebase-config.ts
+google-services.json
