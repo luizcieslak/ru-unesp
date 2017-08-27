@@ -93,6 +93,10 @@ export class MyApp {
 
     const pushObject: PushObject = this.push.init(options);
 
+    pushObject.subscribe('boa')
+      .then(() => console.log('subscribed on oba'))
+      .catch(reason => console.log(reason));
+
     pushObject.on('notification').subscribe((notification: any) => console.log('Received a notification',notification));
 
     pushObject.on('registration').subscribe((registration: any) => console.log('Device registered',registration));
