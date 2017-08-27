@@ -96,7 +96,6 @@ import { FCM } from '@ionic-native/fcm';
     TimeService,
     NativeStorage,
     Push,
-    FCM,
     { provide: ErrorHandler, useClass: IonicErrorHandler }
   ]
 })

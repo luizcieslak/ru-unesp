@@ -15,7 +15,6 @@ import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
 
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
-import { FCM } from '@ionic-native/fcm';
 
 @Component({
   templateUrl: 'app.html'
@@ -37,7 +36,7 @@ export class MyApp {
   constructor(public platform: Platform, public statusBar: StatusBar,
     public splashScreen: SplashScreen, public _user: UserService,
     public events: Events, private _auth: AuthService,
-    public push: Push, private fcm: FCM) {
+    public push: Push) {
     this.initializeApp();
 
     //Escutar pelo evento 'login' criado na LoginPage.
@@ -49,25 +48,6 @@ export class MyApp {
       { title: 'Ajuda', component: AjudaPage, icon: 'help' },
     ];
 
-    fcm.subscribeToTopic('marketing');
-
-    fcm.getToken().then(token => {
-      console.log(token);
-    })
-
-    fcm.onNotification().subscribe(data => {
-      if (data.wasTapped) {
-        console.log("Received in background");
-      } else {
-        console.log("Received in foreground");
-      };
-    })
-
-    fcm.onTokenRefresh().subscribe(token => {
-      console.log(token);
-    })
-
-    fcm.unsubscribeFromTopic('marketing');
   }
 
   initializeApp() {
