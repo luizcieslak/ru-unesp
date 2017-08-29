@@ -14,8 +14,7 @@ import { FirebaseObjectObservable } from 'angularfire2/database';
 import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
 
-import { Push, PushObject, PushOptions } from '@ionic-native/push';
-
+declare let FCMPlugin;
 @Component({
   templateUrl: 'app.html'
 })
@@ -35,8 +34,7 @@ export class MyApp {
 
   constructor(public platform: Platform, public statusBar: StatusBar,
     public splashScreen: SplashScreen, public _user: UserService,
-    public events: Events, private _auth: AuthService,
-    public push: Push) {
+    public events: Events, private _auth: AuthService) {
     this.initializeApp();
 
     //Escutar pelo evento 'login' criado na LoginPage.
@@ -62,47 +60,30 @@ export class MyApp {
   }
 
   pushSetup(): void {
-
-    // to check if we have permission
-    this.push.hasPermission()
-      .then((res: any) => {
-
-        if (res.isEnabled) {
-          console.log('We have permission to send push notifications');
-        } else {
-          console.log('We do not have permission to send push notifications');
+    if (typeof FCMPlugin != 'undefined') {
+      FCMPlugin.getToken(
+        (pushRegistrationId: any) => {
+          console.log('Push registration ID: ', pushRegistrationId);
+        },
+        (err: any) => {
+          console.log('error retrieving push registration id: ' + err);
         }
+      );
 
+      FCMPlugin.subscribeToTopic('topicExample');
+
+      FCMPlugin.onNotification(function (data) {
+        if (data.wasTapped) {
+          //Notification was received on device tray and tapped by the user.
+          alert(JSON.stringify(data));
+          console.log('onNotification wasTapped', data);
+        } else {
+          //Notification was received in foreground. Maybe the user needs to be notified.
+          alert(JSON.stringify(data));
+          console.log('onNotification', data);
+        }
       });
-
-    // to initialize push notifications
-    const options: PushOptions = {
-      android: {
-        senderID: '103998911185'
-      },
-      ios: {
-        alert: 'true',
-        badge: true,
-        sound: 'false'
-      },
-      windows: {},
-      browser: {
-        pushServiceURL: 'http://push.api.phonegap.com/v1/push'
-      }
-    };
-
-    const pushObject: PushObject = this.push.init(options);
-
-    pushObject.subscribe('boa')
-      .then(() => console.log('subscribed on oba'))
-      .catch(reason => console.log(reason));
-
-    pushObject.on('notification').subscribe((notification: any) => console.log('Received a notification',notification));
-
-    pushObject.on('registration').subscribe((registration: any) => console.log('Device registered',registration));
-
-    pushObject.on('error').subscribe(error => console.log('Error with Push plugin',error));
-
+    }
   }
 
   openPage(page) {
