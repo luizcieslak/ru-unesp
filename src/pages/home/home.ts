@@ -14,6 +14,8 @@ import { UserService } from '../../providers/user-service';
 
 import { Observable, Subject, Subscription } from "rxjs/Rx";
 
+import { FCM } from '@ionic-native/fcm';
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -32,7 +34,8 @@ export class HomePage {
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
     public alertCtrl: AlertController, public time: TimeService,
-    public _refeicao: RefeicaoService, public _user: UserService) {
+    public _refeicao: RefeicaoService, public _user: UserService,
+    private fcm: FCM) {
 
     //create and present the loading
     this.loading = this.loadingCtrl.create();
@@ -153,6 +156,9 @@ export class HomePage {
   remove(refeicao: any): void {
     this._refeicao.remove(refeicao, this.isVeg)
       .then(_ => {
+        //Unsubscribe no tópico da refeição (FCM)
+        //TODO: verificar se funciona no ionic serve
+        this.fcm.unsubscribeFromTopic(refeicao.timestamp);
         //Adicionar transação no histórico
         this._user.addHistory('desistência', `Desistiu da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
         let alert = this.alertCtrl.create({

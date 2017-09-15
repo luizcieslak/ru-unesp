@@ -18,6 +18,8 @@ import { UserService } from '../../providers/user-service';
 
 import { HomePage } from '../home/home';
 
+import { FCM } from '@ionic-native/fcm';
+
 @Component({
   selector: 'page-refeicao-list',
   templateUrl: 'refeicao-list.html'
@@ -36,7 +38,8 @@ export class RefeicaoListPage {
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public loadingCtrl: LoadingController, public afDB: AngularFireDatabase,
     public time: TimeService, public _refeicao: RefeicaoService,
-    public _user: UserService, public alertCtrl: AlertController) {
+    public _user: UserService, public alertCtrl: AlertController,
+    private fcm: FCM) {
 
     //create present the loading
     this.loading = this.loadingCtrl.create();
@@ -84,6 +87,8 @@ export class RefeicaoListPage {
       .then(snapshot => {
         this._refeicao.book(refeicao, snapshot.val())
           .then(_ => {
+            //TODO: Subscribe no tópico da refeição (FCM)
+            this.fcm.subscribeToTopic(refeicao.timestamp)
             //Adicionar transação no histórico
             this._user.addHistory('compra', `Refeição do dia ${moment(refeicao.timestamp).format('L')}`);
             //Mostrar mensagem de confirmação.
