@@ -277,4 +277,11 @@ export class UserService {
     return firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`).remove();
   }
 
+  /**
+   * Registra o token de notificação do usuário
+   */
+  registerNotificationToken(token: string): firebase.Promise<any>{
+    return firebase.database().ref(`users/${this._auth.uid}/notificationTokens`).child(token).set(true);
+  }
+
 }

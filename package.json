@@ -19,7 +19,7 @@
         "@angular/platform-browser": "4.0.2",
         "@angular/platform-browser-dynamic": "4.0.2",
         "@ionic-native/core": "3.6.1",
-        "@ionic-native/fcm": "^4.2.0",
+        "@ionic-native/fcm": "^4.2.1",
         "@ionic-native/native-storage": "^4.1.0",
         "@ionic-native/push": "^4.2.0",
         "@ionic-native/splash-screen": "3.6.1",

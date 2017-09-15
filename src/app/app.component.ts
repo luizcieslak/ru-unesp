@@ -14,7 +14,8 @@ import { FirebaseObjectObservable } from 'angularfire2/database';
 import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
 
-declare let FCMPlugin;
+import { FCM } from '@ionic-native/fcm';
+
 @Component({
   templateUrl: 'app.html'
 })
@@ -34,7 +35,8 @@ export class MyApp {
 
   constructor(public platform: Platform, public statusBar: StatusBar,
     public splashScreen: SplashScreen, public _user: UserService,
-    public events: Events, private _auth: AuthService) {
+    public events: Events, private _auth: AuthService,
+    private fcm: FCM) {
     this.initializeApp();
 
     //Escutar pelo evento 'login' criado na LoginPage.
@@ -60,29 +62,32 @@ export class MyApp {
   }
 
   pushSetup(): void {
-    if (typeof FCMPlugin != 'undefined') {
-      FCMPlugin.getToken(
-        (pushRegistrationId: any) => {
-          console.log('Push registration ID: ', pushRegistrationId);
-        },
-        (err: any) => {
-          console.log('error retrieving push registration id: ' + err);
-        }
-      );
+    if (typeof this.fcm != 'undefined') {
 
-      FCMPlugin.subscribeToTopic('topicExample');
+      this.fcm.getToken().then(token => {
+        console.log('getToken()',token);
+        //Registrar o token
+        this._user.registerNotificationToken(token)
+          .then(_ => console.log('token registered on db.'))
+          .catch(reason => console.log('Error when registering token on db.',reason));
+      })
 
-      FCMPlugin.onNotification(function (data) {
+      this.fcm.onNotification().subscribe(data => {
         if (data.wasTapped) {
-          //Notification was received on device tray and tapped by the user.
-          alert(JSON.stringify(data));
-          console.log('onNotification wasTapped', data);
+          console.log("Received in background", data);
         } else {
-          //Notification was received in foreground. Maybe the user needs to be notified.
-          alert(JSON.stringify(data));
-          console.log('onNotification', data);
-        }
-      });
+          console.log("Received in foreground", data);
+        };
+      })
+
+      this.fcm.onTokenRefresh().subscribe(token => {
+        console.log('onTokenRefresh',token);
+        //Registrar o token
+        this._user.registerNotificationToken(token)
+          .then(_ => console.log('token registered on db.'))
+          .catch(reason => console.log('Error when registering token on db.',reason));
+      })
+
     }
   }
 
