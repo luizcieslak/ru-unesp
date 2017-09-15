@@ -3,13 +3,6 @@ import { Nav, Platform, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-//pages going into sidemenu.
-import { AjudaPage } from '../pages/ajuda/ajuda';
-import { HomePage } from '../pages/home/home';
-import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
-import { LoginPage } from '../pages/login/login';
-import { ProfilePage } from '../pages/profile/profile';
-
 import { FirebaseObjectObservable } from 'angularfire2/database';
 import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
@@ -22,9 +15,9 @@ import { FCM } from '@ionic-native/fcm';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = LoginPage; //Change this for setting the rootPage.
+  rootPage: string = 'LoginPage'; //Change this for setting the rootPage.
 
-  pages: Array<{ title: string, component: any, icon: string }>;
+  pages: Array<{ title: string, component: string, icon: string }>;
 
   //information in sidemenu header
   user: FirebaseObjectObservable<any>;
@@ -43,9 +36,9 @@ export class MyApp {
     this.events.subscribe('login', (() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
 
     this.pages = [
-      { title: 'Home', component: HomePage, icon: 'home' },
-      { title: 'Refeições', component: RefeicaoListPage, icon: 'restaurant' },
-      { title: 'Ajuda', component: AjudaPage, icon: 'help' },
+      { title: 'Home', component: 'HomePage', icon: 'home' },
+      { title: 'Refeições', component: 'RefeicaoListPage', icon: 'restaurant' },
+      { title: 'Ajuda', component: 'AjudaPage', icon: 'help' },
     ];
 
   }
@@ -110,7 +103,7 @@ export class MyApp {
    */
   signOut(): void {
     this._auth.signOut()
-      .then(_ => this.nav.setRoot(LoginPage))
+      .then(_ => this.nav.setRoot('LoginPage'))
       .catch(reason => console.log('error in AppComponent#signout()', reason));
   }
 
@@ -118,6 +111,6 @@ export class MyApp {
    * Vai para a Profile Page
    */
   profilePage() {
-    this.nav.setRoot(ProfilePage);
+    this.nav.setRoot('ProfilePage');
   }
 }

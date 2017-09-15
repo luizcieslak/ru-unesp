@@ -20,6 +20,8 @@ import { HomePage } from '../home/home';
 
 import { FCM } from '@ionic-native/fcm';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-refeicao-list',
   templateUrl: 'refeicao-list.html'
@@ -55,7 +57,7 @@ export class RefeicaoListPage {
    * @param {any} refeicao A refeição escolhida
    */
   gotoDetails(refeicao: any): void {
-    this.navCtrl.push(RefeicaoDetailPage, {
+    this.navCtrl.push('RefeicaoDetailPage', {
       refeicao: refeicao
     })
   }
@@ -99,7 +101,7 @@ export class RefeicaoListPage {
               buttons: [{
                 text: 'OK',
                 handler: _ => {
-                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                  this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
                 }
               }]
             });
@@ -152,7 +154,7 @@ export class RefeicaoListPage {
           buttons: [{
             text: 'OK',
             handler: _ => {
-              this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+              this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
             }
           }]
         });

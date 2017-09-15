@@ -10,6 +10,8 @@ import { SignupPage } from '../signup/signup';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AuthService } from '../../providers/auth-service';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html'
@@ -69,7 +71,7 @@ export class LoginPage {
    */
   onLoginSuccess(): void {
     this.events.publish('login'); //Criar um evento chamado 'login' para o sidemenu.
-    this.navCtrl.setRoot(HomePage); //Ir para HomePage.
+    this.navCtrl.setRoot('HomePage'); //Ir para HomePage.
   }
 
   /**
@@ -143,7 +145,7 @@ export class LoginPage {
    * Vai para a página de signup
    */
   signup(): void {
-    this.navCtrl.push(SignupPage);
+    this.navCtrl.push('SignupPage');
   }
 
   //função para o desenvolvimento

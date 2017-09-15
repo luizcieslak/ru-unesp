@@ -7,6 +7,8 @@ import { AuthService } from '../../providers/auth-service';
 
 import { HistoryPage } from '../history/history';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-profile',
   templateUrl: 'profile.html',
@@ -27,7 +29,7 @@ export class ProfilePage {
   }
 
   gotoHistory(): void {
-    this.navCtrl.push(HistoryPage);
+    this.navCtrl.push('HistoryPage');
   }
 
 }

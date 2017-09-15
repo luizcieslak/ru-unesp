@@ -26,7 +26,6 @@
         "@ionic-native/status-bar": "3.6.1",
         "@ionic/storage": "2.0.1",
         "@types/angular": "^1.6.31",
-        "@types/phonegap-plugin-push": "^2.0.0",
         "ajv": "^5.0.0",
         "angularfire2": "^4.0.0-rc0",
         "cordova-plugin-console": "1.0.5",

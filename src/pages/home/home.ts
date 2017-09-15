@@ -16,6 +16,8 @@ import { Observable, Subject, Subscription } from "rxjs/Rx";
 
 import { FCM } from '@ionic-native/fcm';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -167,7 +169,7 @@ export class HomePage {
           buttons: [{
             text: 'OK',
             handler: () => {
-              this.navCtrl.setRoot(HomePage);
+              this.navCtrl.setRoot('HomePage');
             }
           }]
         });
@@ -218,7 +220,7 @@ export class HomePage {
           buttons: [{
             text: 'OK',
             handler: () => {
-              this.navCtrl.setRoot(HomePage);
+              this.navCtrl.setRoot('HomePage');
             }
           }]
         });

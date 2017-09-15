@@ -6,6 +6,8 @@ import { AuthService } from '../../providers/auth-service';
 
 import { Subject } from 'rxjs';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-history',
   templateUrl: 'history.html',
