@@ -6,8 +6,6 @@ import { EmailValidator } from '../../validators/email';
 import { RaValidator } from '../../validators/ra';
 import { matchingPasswords } from '../../validators/matching-passwords';
 
-import { LoginPage } from '../login/login';
-
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';

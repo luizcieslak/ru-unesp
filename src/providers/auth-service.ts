@@ -6,15 +6,12 @@ import * as firebase from 'firebase/app';
 //importing angular auth items
 import { AngularFireAuth } from 'angularfire2/auth';
 
-//Native storage
-import { NativeStorage } from '@ionic-native/native-storage';
-
 @Injectable()
 export class AuthService {
 
   displayName: string;
 
-  constructor(private afAuth: AngularFireAuth, private nativeStorage: NativeStorage) {
+  constructor(private afAuth: AngularFireAuth) {
     afAuth.authState.subscribe(user => {
       if (!user) {
         this.displayName = null;
@@ -56,14 +53,7 @@ export class AuthService {
           resolve('user already logged in');
         }
         else {
-          this.nativeStorage.getItem('userToken')
-            .then(token => {
-              //try to login with key retrieved
-              this.afAuth.auth.signInWithCustomToken(token)
-                .then(() => resolve('logged in with token'))
-                .catch(reason => console.log('error in signInWithCustomToken', reason));
-            })
-            .catch(reason => reject('no auth and no token: ' + reason));
+          reject('no user found.')
         }
       })
     })
@@ -79,24 +69,11 @@ export class AuthService {
       //Sign in with email
       this.afAuth.auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          //Then, storage user's login token in native storage
-          this.storeUserToken();
           resolve(true);
         })
         .catch(reason => reject(reason));
     })
 
-  }
-
-  storeUserToken(): void {
-    console.log('storeUserToken');
-    this.afAuth.auth.currentUser.getToken()
-      .then(token => {
-        this.nativeStorage.setItem('userToken', token)
-          .then(val => console.log('user token stored', val))
-          .catch(reason => console.error('nativeStorage.setItem()', reason));
-      })
-      .catch(reason => console.log(reason));
   }
 
   signOut(): firebase.Promise<any> {

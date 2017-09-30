@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
 
 import { FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
 import { UserService } from '../../providers/user-service';
-import { AuthService } from '../../providers/auth-service';
-
-import { HistoryPage } from '../history/history';
 
 import { IonicPage } from 'ionic-angular';
 @IonicPage()
@@ -20,8 +17,7 @@ export class ProfilePage {
   profilePicture: any; //gravatar profile pic
   history: FirebaseListObservable<any>;
 
-  constructor(public navCtrl: NavController, private _auth: AuthService,
-    private _user: UserService) {
+  constructor(public navCtrl: NavController, private _user: UserService) {
     //Retrieve data
     this.user = this._user.userObservable();
     this.profilePicture = this._user.gravatarLink();

@@ -4,9 +4,6 @@ import { NavController, NavParams, AlertController, ToastController, Events } fr
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { EmailValidator } from '../../validators/email';
 
-import { HomePage } from '../home/home';
-import { SignupPage } from '../signup/signup';
-
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AuthService } from '../../providers/auth-service';
 

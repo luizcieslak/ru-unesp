@@ -12,7 +12,7 @@ import { RefeicaoService } from '../../providers/refeicao-service';
 import { AuthService } from '../../providers/auth-service';
 import { UserService } from '../../providers/user-service';
 
-import { Observable, Subject, Subscription } from "rxjs/Rx";
+import { Observable, Subscription } from "rxjs/Rx";
 
 import { FCM } from '@ionic-native/fcm';
 

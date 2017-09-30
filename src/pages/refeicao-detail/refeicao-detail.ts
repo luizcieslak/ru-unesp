@@ -3,8 +3,6 @@ import { NavController, NavParams, AlertController, LoadingController, Loading, 
 
 import { AngularFireDatabase } from 'angularfire2/database';
 
-import { HomePage } from '../home/home';
-
 import { UserService } from '../../providers/user-service';
 import { RefeicaoService } from '../../providers/refeicao-service';
 
