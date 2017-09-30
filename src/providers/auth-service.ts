@@ -9,37 +9,32 @@ import { AngularFireAuth } from 'angularfire2/auth';
 @Injectable()
 export class AuthService {
 
-  displayName: string;
-
   constructor(private afAuth: AngularFireAuth) {
-    afAuth.authState.subscribe(user => {
-      if (!user) {
-        this.displayName = null;
-        return;
-      }
-      this.displayName = user.displayName;
-    });
+    
   }
 
   /**
    * @returns true if user is authenticated.
    */
-  get autenthicated(): boolean {
+  autenthicated(): boolean {
     return this.afAuth.authState !== null;
   }
 
+  async user(): Promise<firebase.User> {
+    return await this.afAuth.authState.take(1).toPromise();
+  }
+  
   /**
    * @returns user's uid.
    */
-  get uid(): string {
-    return this.afAuth.authState !== null ? this.afAuth.auth.currentUser.uid : null;
+  async uid(): Promise<string>{
+    const user:firebase.User = await this.user();
+    return user.uid;
   }
 
-  /**
-   * @returns user's email.
-   */
-  get email(): string {
-    return this.afAuth.authState !== null ? this.afAuth.auth.currentUser.email : null;
+  async email(): Promise<string>{
+    const user:firebase.User = await this.user();
+    return user.email;
   }
 
   /**

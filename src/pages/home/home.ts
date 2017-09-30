@@ -16,6 +16,8 @@ import { Observable, Subscription } from "rxjs/Rx";
 
 import { FCM } from '@ionic-native/fcm';
 
+import { ConnectivityService } from '../../providers/connectivity-service'
+
 import { IonicPage } from 'ionic-angular';
 @IonicPage()
 @Component({
@@ -37,14 +39,25 @@ export class HomePage {
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
     public alertCtrl: AlertController, public time: TimeService,
     public _refeicao: RefeicaoService, public _user: UserService,
-    private fcm: FCM) {
+    private fcm: FCM, private _conn: ConnectivityService) {
 
-    //create and present the loading
-    this.loading = this.loadingCtrl.create();
-    this.loading.present();
+    //if the user has active connection
+    if (_conn.isOnline) {
+      //try to retrieve the information from db
+      this.retrieveInfo()
+        .then(_ =>'home.ts info loaded')
+        .catch(reason => console.log('retrieveInfo(): ',reason))
+    } else {
+      //if the user has not a active connection, show an alert
+      console.log('no internet connection');
+    }
 
+  }
+
+  async retrieveInfo(): Promise<any> {
     //Observable do Usuário
-    this.user = this.afDB.object(`/users/${this._auth.uid}`);
+    const uid = await this._auth.uid();
+    this.user = this.afDB.object(`/users/${uid}`);
     this.userSub = this.user.subscribe(user => {
       this.isVeg = user.veg;
       if (user.refeicoes) {
@@ -103,11 +116,11 @@ export class HomePage {
           })
       }
       
-      this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
+    return 1;
   }
 
-  ionViewDidLeave(){
+  ionViewDidLeave() {
     //this is giving a infinite loop in Loading component
     //this.userSub.unsubscribe(); 
   }

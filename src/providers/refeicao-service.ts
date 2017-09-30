@@ -141,8 +141,8 @@ export class RefeicaoService {
    * @param refeicao A refeição escolhida
    * @param isVeg Usuário é vegetariano ou não.
    */
-  book(refeicao: any, isVeg: boolean): firebase.Promise<any> {
-    return new firebase.Promise((resolve, reject) => {
+  book(refeicao: any, isVeg: boolean): Promise<any> {
+    return new Promise((resolve, reject) => {
       //verificar se o usuário pode comprar a refeição escolhida.
       this._user.canBuy(refeicao).subscribe(result => {
         //Se result for uma string, então ocorreu algum problema
@@ -166,7 +166,7 @@ export class RefeicaoService {
    * @param refeicao A refeição a ser manipulada
    * @param {boolean} isVeg Usuário vegetariano? 
    */
-  addUser(refeicao: any, isVeg: boolean): firebase.Promise<any> {
+  async addUser(refeicao: any, isVeg: boolean): Promise<any> {
     let userList;
     if (isVeg) {
       userList = firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg`);
@@ -180,7 +180,7 @@ export class RefeicaoService {
     //})
 
     //Adicionar o usuário direto, nesse ponto já se sabe que o usuário não está na lista
-    return userList.child(this._auth.uid).set(true);
+    return userList.child(await this._auth.uid()).set(true);
   }
 
   /**
@@ -210,9 +210,9 @@ export class RefeicaoService {
    * @param refeicao A refeição a ser manipulada
    */
 
-  subtractVagas(refeicao: any): firebase.Promise<any> {
+  subtractVagas(refeicao: any): Promise<any> {
     //TODO: retornar uma Promise.reject() para qdo não tiver mais vaga
-    return new firebase.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       firebase.database().ref(`/refeicoes/${refeicao.$key}/vagas`)
         .transaction(vagas => {
           console.log('subtractVagas()', vagas)
@@ -242,9 +242,10 @@ export class RefeicaoService {
    * Coloca o usuário na fila de espera da refeição escolhida.
    * @param refeicao A refeição escolhida
   */
-  queue(refeicao: any): firebase.Promise<any> {
+  async queue(refeicao: any): Promise<any> {
+    const uid = await this._auth.uid();
     //TODO: verificar se precisa fazer distinção de usuários (default e veg) na fila de espera.
-    return new firebase.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
       //verificar se o usuário pode entrar na fila
       this._user.canQueue(refeicao).subscribe(result => {
@@ -258,7 +259,7 @@ export class RefeicaoService {
               const pos: Number = count.snapshot.val();
               //Promises para adicionar o usuário na fila da refeição.
               const refeicaoQueue = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue`)
-                .child(this._auth.uid).set(pos);
+                .child(uid).set(pos);
               const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(count => count + 1);
               const userQueue = this._user.addToQueue(refeicao, pos);
               //Debitar o saldo do usuário
@@ -275,14 +276,15 @@ export class RefeicaoService {
    * @param refeicao A refeição a ser manipulada
    * @param {booelan} isVeg Usuário vegetariano
    */
-  removeUser(refeicao: any, isVeg: boolean): firebase.Promise<any> {
+  async removeUser(refeicao: any, isVeg: boolean): Promise<any> {
+    const uid = await this._auth.uid();
     return isVeg ?
       Promise.all([
-        firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg/${this._auth.uid}`).remove(),
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg/${uid}`).remove(),
         firebase.database().ref(`/refeicoes/${refeicao.$key}/usersVeg_count/`).transaction(count => count - 1)])
       :
       Promise.all([
-        firebase.database().ref(`/refeicoes/${refeicao.$key}/users/${this._auth.uid}`).remove(),
+        firebase.database().ref(`/refeicoes/${refeicao.$key}/users/${uid}`).remove(),
         firebase.database().ref(`/refeicoes/${refeicao.$key}/users_count/`).transaction(count => count - 1)])
   }
 
@@ -290,7 +292,7 @@ export class RefeicaoService {
    * Remove o usuário da refeição, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
-  remove(refeicao: any, isVeg: boolean): firebase.Promise<any> {
+  remove(refeicao: any, isVeg: boolean): Promise<any> {
     //OBS: O reembolso do usuário é feito pelo Firebase Functions.
     //verificar se está dentro do tempo
     if (this.time.isAllowed(refeicao.timestamp)) {
@@ -308,11 +310,12 @@ export class RefeicaoService {
    * Remove o usuário da fila de espera da refeição, reembolsando-o.
    * @param {any} refeicao A refeição selecionada.
    */
-  removeQueue(refeicao: any): firebase.Promise<any> {
-    return new firebase.Promise((resolve, reject) => {
+  async removeQueue(refeicao: any): Promise<any> {
+    const uid = await this._auth.uid();
+    return new Promise((resolve, reject) => {
       if (this.time.isAllowed(refeicao.timestamp)) {
         //Remover o usuário da da fila
-        const removeUser = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue/${this._auth.uid}`).remove();
+        const removeUser = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue/${uid}`).remove();
         //decrementar o contador da fila
         const queueCount = firebase.database().ref(`/refeicoes/${refeicao.$key}/queue_count`).transaction(queue => queue - 1);
         //Remover a refeição do usuário

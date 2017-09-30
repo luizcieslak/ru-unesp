@@ -25,12 +25,12 @@ import { HttpModule } from '@angular/http';
 //Parallax Header
 import { ParallaxHeader } from '../components/parallax-header/parallax-header';
 
-//Native storage
-import { NativeStorage } from '@ionic-native/native-storage';
-
 import { FCM } from '@ionic-native/fcm';
 
 import { PipesModule } from '../pipes/pipes.module';
+import { ConnectivityService } from '../providers/connectivity-service';
+
+import { Network } from '@ionic-native/network';
 
 @NgModule({
   declarations: [
@@ -57,9 +57,10 @@ import { PipesModule } from '../pipes/pipes.module';
     UserService,
     AuthService,
     TimeService,
-    NativeStorage,
     FCM,
-    { provide: ErrorHandler, useClass: IonicErrorHandler }
+    { provide: ErrorHandler, useClass: IonicErrorHandler },
+    Network,
+    ConnectivityService
   ]
 })
 export class AppModule { }
