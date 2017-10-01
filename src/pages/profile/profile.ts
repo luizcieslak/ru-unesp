@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 
-import { FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
 import { UserService } from '../../providers/user-service';
 
 import { IonicPage } from 'ionic-angular';
@@ -13,13 +12,13 @@ import { IonicPage } from 'ionic-angular';
 export class ProfilePage {
 
   //information in sidemenu header
-  user: FirebaseObjectObservable<any>;
+  user: Promise<any>;
   profilePicture: any; //gravatar profile pic
-  history: FirebaseListObservable<any>;
+  history: Promise<any>;
 
   constructor(public navCtrl: NavController, private _user: UserService) {
     //Retrieve data
-    this.user = this._user.userObservable();
+    this.user = this._user.userPromise();
     this.profilePicture = this._user.gravatarLink();
     this.history = this._user.lastFiveHistory();
   }

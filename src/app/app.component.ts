@@ -3,7 +3,6 @@ import { Nav, Platform, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-import { FirebaseObjectObservable } from 'angularfire2/database';
 import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
 
@@ -20,7 +19,7 @@ export class MyApp {
   pages: Array<{ title: string, component: string, icon: string }>;
 
   //information in sidemenu header
-  user: FirebaseObjectObservable<any>;
+  user: Promise<any>;
   name: string;
   saldo: Number;
   profilePicture: any; //gravatar profile pic
@@ -94,7 +93,7 @@ export class MyApp {
    * Pega a imagem do usuário no Gravatar.
    */
   onLoginSuccess(): void { //get logged user
-    this.user = this._user.userObservable();
+    this.user = this._user.userPromise();
     this.profilePicture = this._user.gravatarLink();
   }
 

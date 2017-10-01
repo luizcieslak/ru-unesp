@@ -13,7 +13,7 @@ import { IonicPage } from 'ionic-angular';
 })
 export class HistoryPage {
 
-  history: FirebaseListObservable<any>;
+  history: Promise<any>;
   subject: Subject<string>;
 
   constructor(private _user: UserService) {

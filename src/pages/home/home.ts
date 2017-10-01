@@ -35,6 +35,8 @@ export class HomePage {
   refeicoes: Observable<Array<{}>>;
   queueRefeicoes: Observable<Array<{}>>;
 
+  test: string = ' 2';
+
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
     public alertCtrl: AlertController, public time: TimeService,

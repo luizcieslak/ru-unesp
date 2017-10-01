@@ -48,9 +48,9 @@ export class UserService {
 
   /**
    * Pega a referência do usuário no banco de dados.
-   * @returns Observable.
+   * @returns Promise.
    */
-  async userObservable(): Promise<any> {
+  async userPromise(): Promise<any> {
     return this.afDB.object(`users/${await this._auth.uid()}`).take(1).toPromise();
   }
 
