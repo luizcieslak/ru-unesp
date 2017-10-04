@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading, AlertController } from 'ionic-angular';
+import { NavController, LoadingController, Loading, AlertController, Platform } from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
@@ -35,25 +35,53 @@ export class HomePage {
   refeicoes: Observable<Array<{}>>;
   queueRefeicoes: Observable<Array<{}>>;
 
-  test: string = ' 2';
-
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
     public alertCtrl: AlertController, public time: TimeService,
     public _refeicao: RefeicaoService, public _user: UserService,
-    private fcm: FCM, private _conn: ConnectivityService) {
+    private fcm: FCM, private _conn: ConnectivityService,
+    private platform: Platform) {
 
-    //if the user has active connection
-    if (_conn.isOnline) {
-      //try to retrieve the information from db
+      this.checkConn();
+  }
+
+  /**
+   * Checks user's connection to internet in order to load the data.
+   */
+  checkConn(): void {
+    if (this._conn.isOnline()) {
       this.retrieveInfo()
-        .then(_ =>'home.ts info loaded')
-        .catch(reason => console.log('retrieveInfo(): ',reason))
+        .then(_ => 'home.ts info loaded')
+        .catch(reason => console.log('retrieveInfo(): ', reason))
     } else {
-      //if the user has not a active connection, show an alert
-      console.log('no internet connection');
+      this.connAlert();
     }
+  }
 
+  /**
+   * Alert Controller display a connectivity error.
+   */
+  connAlert(): void {
+    let confirm = this.alertCtrl.create({
+      title: 'Erro na conexão',
+      message: 'Você está sem conexão. Verifique sua conectividade e tente novamente',
+      buttons: [
+        {
+          text: 'Sair do app',
+          handler: () => {
+            this.platform.exitApp();
+          }
+        },
+        {
+          text: 'Tentar novamente',
+          handler: () => {
+            this.checkConn();
+          }
+        }
+      ],
+      enableBackdropDismiss: false
+    });
+    confirm.present();
   }
 
   async retrieveInfo(): Promise<any> {
@@ -117,7 +145,7 @@ export class HomePage {
             return data;
           })
       }
-      
+
     })
     return 1;
   }
