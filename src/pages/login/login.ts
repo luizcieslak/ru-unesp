@@ -67,7 +67,6 @@ export class LoginPage {
    * Executa as funções após o login.
    */
   onLoginSuccess(): void {
-    this.events.publish('login'); //Criar um evento chamado 'login' para o sidemenu.
     this.navCtrl.setRoot('HomePage'); //Ir para HomePage.
   }
 

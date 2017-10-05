@@ -3,7 +3,7 @@
     <name>ru-unesp</name>
     <description>Projeto de TCC - Mobile app feito em Ionic2 para o uso do RU da UNESP Bauru.</description>
     <author email="cieslakluiz@gmail.com" href="http://ionicframework.com/">Luiz Fernando da Silva Cieslak</author>
-    <content original-src="index.html" src="http://192.168.0.19:8101" />
+    <content src="index.html" />
     <access origin="*" />
     <allow-navigation href="http://ionic.local/*" />
     <allow-intent href="http://*/*" />

@@ -94,7 +94,11 @@ export class MyApp {
    */
   onLoginSuccess(): void { //get logged user
     this.user = this._user.userPromise();
-    this.profilePicture = this._user.gravatarLink();
+    this._user.getProfilePic()
+      .then(link =>{
+        this.profilePicture = link;
+      })
+      .catch(reason => console.log(reason));
   }
 
   /**

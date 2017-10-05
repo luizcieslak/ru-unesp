@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading, AlertController, Platform } from 'ionic-angular';
+import { NavController, LoadingController, Loading, AlertController, Platform, Events } from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
@@ -40,9 +40,11 @@ export class HomePage {
     public alertCtrl: AlertController, public time: TimeService,
     public _refeicao: RefeicaoService, public _user: UserService,
     private fcm: FCM, private _conn: ConnectivityService,
-    private platform: Platform) {
+    private platform: Platform, private events: Events) {
 
       this.checkConn();
+      //if the user is in this page, this means that we need to retrive the profilePic.
+      this.events.publish('login');
   }
 
   /**

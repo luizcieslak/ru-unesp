@@ -19,8 +19,13 @@ export class ProfilePage {
   constructor(public navCtrl: NavController, private _user: UserService) {
     //Retrieve data
     this.user = this._user.userPromise();
-    this.profilePicture = this._user.gravatarLink();
     this.history = this._user.lastFiveHistory();
+
+    this._user.getProfilePic()
+      .then(link => {
+        this.profilePicture = link;
+      })
+      .catch(reason => console.log(reason));
   }
 
   gotoHistory(): void {

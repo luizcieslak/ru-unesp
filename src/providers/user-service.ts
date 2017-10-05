@@ -42,8 +42,17 @@ export class UserService {
     }));
   }
 
-  async gravatarLink(): Promise<any> {
-    return "https://www.gravatar.com/avatar/" + md5(await this._auth.email(), 'hex');
+  /**
+   * Tries to get user's profile photo in gravatar. If does not exist, return default pic.
+   */
+  async getProfilePic(): Promise<any> {
+    const email = await this._auth.email();
+    return new Promise((resolve,reject) => {
+      const link = "https://www.gravatar.com/avatar/" + md5(email, 'hex');
+      console.log(link, email)
+      resolve(link)
+    })
+    
   }
 
   /**
