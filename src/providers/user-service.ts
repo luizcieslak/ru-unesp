@@ -77,7 +77,7 @@ export class UserService {
       query: {
         orderByChild: 'reverseTimestamp'
       }
-    });
+    }).take(1).toPromise();
   }
 
   async addHistory(type: string, description: string): Promise<any> {
