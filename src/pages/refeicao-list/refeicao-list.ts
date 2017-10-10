@@ -23,9 +23,8 @@ import { IonicPage } from 'ionic-angular';
 })
 export class RefeicaoListPage {
 
-  refeicoes: Observable<any>; //refeicoes array.
-  loading: Loading;                       //loading component.
-  empty: boolean;
+  refeicoes: Promise<any>; //refeicoes array.
+  canGoForward: boolean;
   canGoBack: boolean = false;
   canBuy: Array<boolean> = [];
   canQueue: Array<boolean> = [];
@@ -38,13 +37,8 @@ export class RefeicaoListPage {
     public _user: UserService, public alertCtrl: AlertController,
     private fcm: FCM) {
 
-    //create present the loading
-    this.loading = this.loadingCtrl.create();
-    this.loading.present();
-
-    //buscar a próxima página de refeições
+    //buscar a próxima página de refeições assim que a página carregar
     this.nextPage(true);
-    this.loading.dismiss(); 
   }
 
   /**
@@ -160,46 +154,65 @@ export class RefeicaoListPage {
 
   nextPage(firstPage?: boolean): void {
 
+    //LoadingContoller para mostrar uma mensagem enquanto carrega os dados.
+    const loading = this.loadingCtrl.create({
+      content: 'Carregando...'
+    });
+    loading.present();
+
+    //Pegar a lista de refeições de maneira assíncrona
     if (firstPage) {
-      //Pegar a lista de refeições de maneira assíncrona
-      this.refeicoes = this._refeicao.nextPage(true) //true para a flag firstPage
-      //dar um share() para que a função não seja chamada 2x.
-      .share();
-    }else{
-        this.canGoBack = true;
-        this.refeicoes = this._refeicao.nextPage()
-        .share();
+      this.refeicoes = this._refeicao.nextPage(true); //true para a flag firstPage
+    } else {
+      //Se não for a primeira página, o usuário pode voltar para a página anterior
+      this.canGoBack = true;
+      this.refeicoes = this._refeicao.nextPage();
     }
 
+    //Verificar a resposta da Promise do nextPage()
+    this.refeicoes
+      .then(snapshots => {
+        //Atualizar as flags
+        //Isso é realizado aqui porque só temos certeza que todas as operações
+        //assíncronas foram realizadas no bloco then().
+        this.canGoForward = this._refeicao.canGoForward();
 
-    this.refeicoes.subscribe(snapshots => {
-      //checar se o array snapshots é vazio ou se é a ultima página
-      this.empty = snapshots.length == 0 || snapshots.lastPage;
-      console.log('empty?', this.empty)
+        //para cada refeicao, verificar se pode comprar e pode entrar na fila
+        snapshots.forEach((snapshot, index) => {
+          this.checkAvailability(snapshot, index);
+        });
 
-      //para cada refeicao, verificar se pode comprar e pode entrar na fila
-      snapshots.forEach((snapshot, index) => {
-        this.checkAvailability(snapshot, index);
+        //Dismiss no LoadingController após tudo ser carregado
+        loading.dismiss();
       });
-    });
+
   }
 
   previousPage(): void {
 
+    const loading = this.loadingCtrl.create({
+      content: 'Carregando...'
+    });
+    loading.present();
+
     //Pegar a lista de refeições de maneira assíncrona
     this.refeicoes = this._refeicao.previousPage();
 
-    //Assim que os dados forem carregados, fechar o loading component.
-    this.refeicoes.subscribe(snapshots => {
-      //mudar a flag 'empty' para falso, já que voltamos a página que tem conteúdo.
-      this.empty = false;
-      //Verificar se a página requisitada é a primeira.
-      this.canGoBack = snapshots.firstPage;
-      console.log('empty?', this.empty)
+    this.refeicoes.then(snapshots => {
+
+      //Atualizar as flags
+      //Isso é realizado aqui porque só temos certeza que todas as operações
+      //assíncronas foram realizadas no bloco then().
+      this.canGoForward = this._refeicao.canGoForward();
+      this.canGoBack = this._refeicao.canGoBack();
+
       //para cada refeicao, verificar se pode comprar e pode entrar na fila
       snapshots.forEach((snapshot, index) => {
         this.checkAvailability(snapshot, index);
       });
+
+      //Dismiss no LoadingController após tudo ser carregado
+      loading.dismiss();
     });
   }
 

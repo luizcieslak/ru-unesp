@@ -22,8 +22,7 @@ const pageLength = 5;
 @Injectable()
 export class RefeicaoService {
 
-  nextPageCursor: any;
-  pages = [];
+  cursor: any[] = [];
   currentPage: number;
 
   constructor(private db: AngularFireDatabase, private time: TimeService,
@@ -34,99 +33,118 @@ export class RefeicaoService {
   /**
    * Retorna a próxima página de refeições de acordo com a constante pageLength
    */
-  nextPage(firstPage? : boolean): Observable<any> {
-    if(firstPage){
-      this.currentPage = 0;
-      this.nextPageCursor = undefined;
-    } 
-    return Observable.create(subscriber => {
-      //Inicialização das variáveis
+  async nextPage(firstPage?: boolean): Promise<any> {
+    //Se essa função estiver sendo executada pela primeira vez,
+    //O cursor da primeira página se torna o timestamp atual
+    //e a flag currentPage é zerada.
+    if (firstPage) {
       const now = this.time.localTimestamp();
-      let query: Observable<any>;
+      this.currentPage = 0;
+      this.cursor[this.currentPage] = now;
+    }
 
-      console.log('searching for the next page. cursor:', this.nextPageCursor);
+    //Inicialização das variáveis
+    let query: Observable<any>;
 
-      //Realizar a query com ou sem o cursor.
-      if (this.nextPageCursor == undefined) {
-        query = this.db.list('/refeicoes', {
-          query: {
-            orderByChild: 'timestamp',
-            startAt: now,
-            limitToFirst: pageLength + 1 //+1 para guardar o último como cursor
-          }
-        });
-      } else {
-        query = this.db.list('/refeicoes', {
-          query: {
-            orderByChild: 'timestamp',
-            startAt: this.nextPageCursor.timestamp, //Como o cursor existe, começar a query por ele
-            limitToFirst: pageLength + 1 //+1 para guardar o último como cursor
-          }
-        });
-      }
-
-      //Subscribe na query para retirar a última refeição
-      //e colocá-la como cursos
-      query.take(1).subscribe(result => {
-        this.nextPageCursor = result[result.length - 1];
-        console.log('new cursor', moment(this.nextPageCursor.timestamp).format('LLLL'));
-        if (result.length > pageLength) {
-          //retirar a ultima entrada
-          this.nextPageCursor = result.pop();
-          result.lastPage = false;
+    if (this.cursor[this.currentPage] == undefined) {
+      //Se não há um cursor, quer dizer que não há uma página a ser exibida.
+      return Promise.resolve();
+    } else {
+      //Realizar a query com o cursor da página atual.
+      query = this.db.list('/refeicoes', {
+        query: {
+          orderByChild: 'timestamp',
+          startAt: this.cursor[this.currentPage],
+          limitToFirst: pageLength
         }
+      });
+    }
 
-        //armazenar a página no array pages[]
-        this.pages.push(result);
-        console.log('new page',this.currentPage, this.pages[this.currentPage]);
-        //Atualizar a flag 'currentPage'
-        this.currentPage++;
-        
-
-        //verificar se há uma próxima página para mostrar na UI
-        this.db.list('/refeicoes', {
-          query: {
-            orderByChild: 'timestamp',
-            startAt: moment(this.nextPageCursor.timestamp).add(1, 'days').valueOf(), //o próximo dia
-            limitToFirst: 1 //se houver pelo menos uma entrada, há uma nova página
-          }
-        }).take(1).subscribe(nextpage =>{
-          result.lastPage = nextpage.length == 0;
-          //Enviar os resultados para a Observable
-          subscriber.next(result);
-          subscriber.complete();
-        });
-
-      })
-
-    })
-
-
+    console.log('searching for the next page. cursor:', moment(this.cursor[this.currentPage]).format('L'));
+    //Executar função getNextCursor() e retornar.
+    return await this.getNextCursor(query);
   }
 
   /**
-   * Retorna a página anterior de refeições de acordo com a constante pageLength
+   * Retorna a página anterior de refeições de maneira síncrona, 
+   * utilizando o cursor da página atual como referência.
    */
-  previousPage(): Observable<any> {
-    return Observable.create(subscriber => {
-      //Atualizar a flag 'currentPage'
-      this.currentPage -= 1;
-      //Atualizar o cursor da próxima página
-      this.nextPageCursor = this.pages[this.currentPage][0];
+  async previousPage(): Promise<any> {
+    //Inicialização das variáveis
+    const now = this.time.localTimestamp();
 
-      //Sinalizar caso seja a primeira página
-      if(this.currentPage == 0){
-        this.pages[this.currentPage].firstPage = true;
+    //Decrementar o contador de páginas
+    this.currentPage--;
+
+
+    //Realizar a query com o cursor da página anterior 
+    //-1, para não incluir o próprio cursor no resultado.
+    return this.db.list('/refeicoes', {
+      query: {
+        orderByChild: 'timestamp',
+        endAt: this.cursor[this.currentPage] - 1,
+        limitToLast: pageLength
       }
-
-      //Enviar os resultados para a Observable.
-      subscriber.next(this.pages[this.currentPage]);
-      subscriber.complete();
     })
-
+      .share() //share para que a função não seja chamada mais de uma vez
+      .take(1) //receber o primeiro valor retornado da Observable
+      .toPromise(); //converter para Promise para utilizar o ES7 async/await.
   }
 
+  /**
+   * Verifica se é possível navegar para a página anterior da lista de refeições.
+   */
+  canGoBack(): boolean {
+    return this.currentPage > 1;
+  }
 
+  /**
+   * Verifica se é possível navegar para a página seguinte da lista de refeições.
+   */
+  canGoForward(): boolean {
+    return this.cursor[this.currentPage] != undefined;
+  }
+
+  /**
+   * Busca pelo cursor de paginação da próxima página a ser exibida.
+   * @param query Query que está sendo realizada.
+   */
+  async getNextCursor(query: Observable<any>): Promise<any> {
+    //Inicialização de variáveis.
+    const refeicoes = await query.take(1).toPromise();
+    const lastRef = refeicoes[refeicoes.length - 1];
+
+    //Incrementar o contador de páginas
+    this.currentPage++;
+
+    //Se o número de refeições retornada pela query é igual ao tamanho da página,
+    //É necessário realizar outra query para verificar se há uma próxima página
+    //a ser mostrada e pegar o cursor correto.
+    if (refeicoes.length == pageLength) {
+      const cursorPromise = this.db.list('/refeicoes', {
+        query: {
+          orderByChild: 'timestamp',
+          startAt: lastRef.timestamp + 1,
+          limitToFirst: 1
+        }
+      }).take(1).toPromise();
+
+
+      const refeicaoCursor = await cursorPromise;
+      //Se a query retornar um array vazio, isso significa que não há mais registros
+      //Portanto, o cursor é undefined
+      if (refeicaoCursor.length > 0) this.cursor[this.currentPage] = refeicaoCursor[0].timestamp;
+      else this.cursor[this.currentPage] = undefined;
+    } else {
+      //Se o númerofor menor, não há cursor para a próxima página 
+      // e a aplicação deve avisar o usuário que não há uma próxima página.
+      this.cursor[this.currentPage] = undefined;
+    }
+
+    console.log('new cursor for page', this.currentPage, moment(this.cursor[this.currentPage]).format('L'));
+
+    return query.take(1).toPromise();
+  }
 
   /**
    * Pega a referência da refeição no banco de dados.
