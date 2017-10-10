@@ -277,7 +277,7 @@ export class UserService {
    * @param refeicao A refeição a ser removida.
    */
   async removeRefeicao(refeicao: any): Promise<any> {
-    return firebase.database().ref(`users/${await this._auth.uid}/refeicoes/${refeicao.$key}`).remove();
+    return firebase.database().ref(`users/${await this._auth.uid()}/refeicoes/${refeicao.$key}`).remove();
   }
 
   /**

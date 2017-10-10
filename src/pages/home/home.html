@@ -8,7 +8,6 @@
 </ion-header>
 
 <ion-content padding>
-
   <ion-list>
     <ion-item-divider> Próximas refeições</ion-item-divider>
     <ion-item *ngFor="let r of refeicoes | async" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">

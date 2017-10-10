@@ -221,6 +221,7 @@ export class HomePage {
         alert.present();
       })
       .catch(reason => {
+        console.log('error in remove()', reason)
         if (!reason) {
           let alert = this.alertCtrl.create({
             title: 'Erro',
