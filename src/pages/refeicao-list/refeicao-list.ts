@@ -153,7 +153,6 @@ export class RefeicaoListPage {
   }
 
   nextPage(firstPage?: boolean): void {
-
     //LoadingContoller para mostrar uma mensagem enquanto carrega os dados.
     const loading = this.loadingCtrl.create({
       content: 'Carregando...'
@@ -189,7 +188,6 @@ export class RefeicaoListPage {
   }
 
   previousPage(): void {
-
     const loading = this.loadingCtrl.create({
       content: 'Carregando...'
     });

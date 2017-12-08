@@ -42,9 +42,9 @@ export class HomePage {
     private fcm: FCM, private _conn: ConnectivityService,
     private platform: Platform, private events: Events) {
 
-      this.checkConn();
-      //if the user is in this page, this means that we need to retrive the profilePic.
-      this.events.publish('login');
+    this.checkConn();
+    //if the user is in this page, this means that we need to retrive the profilePic.
+    this.events.publish('login');
   }
 
   /**
@@ -177,6 +177,9 @@ export class HomePage {
     return this.shownGroup === group;
   };
 
+  /**
+   * Alert que confirma se o usuário quer remover a refeição.
+   */
   confirmRemove(refeicao: any): void {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
@@ -204,16 +207,17 @@ export class HomePage {
     this._refeicao.remove(refeicao, this.isVeg)
       .then(_ => {
         //Unsubscribe no tópico da refeição (FCM)
-        //TODO: verificar se funciona no ionic serve
         this.fcm.unsubscribeFromTopic(refeicao.timestamp);
         //Adicionar transação no histórico
         this._user.addHistory('desistência', `Desistiu da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
+        //Alert de confirmação
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Você removeu esta refeição. Seu saldo será reembolsado.',
           buttons: [{
             text: 'OK',
             handler: () => {
+              //Carregar a página inicial novamente
               this.navCtrl.setRoot('HomePage');
             }
           }]
@@ -232,7 +236,9 @@ export class HomePage {
         }
       });
   }
-
+  /**
+  * Alert que confirma se o usuário quer sair da fila.
+  */
   confirmRemoveQueue(refeicao: any) {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
@@ -260,6 +266,7 @@ export class HomePage {
       .then(_ => {
         //Adicionar transação no histórico
         this._user.addHistory('desistência', `Desistiu da fila da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
+        //Alert de confirmação
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Operação realizada com sucesso. Seu saldo será reembolsado.',
