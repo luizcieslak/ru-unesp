@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
+import { AngularFireDatabase, FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
 
 import { TimeService } from './time-service';
 import { UserService } from './user-service';
@@ -16,6 +16,7 @@ import 'rxjs/add/operator/take';
 //moment.js library for handling timestamps
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
+import { query } from '@angular/core/src/animation/dsl';
 
 const pageLength = 5;
 
@@ -144,6 +145,15 @@ export class RefeicaoService {
     console.log('new cursor for page', this.currentPage, moment(this.cursor[this.currentPage]).format('L'));
 
     return query.take(1).toPromise();
+  }
+
+  nextRefeicoes(): FirebaseListObservable<any>{
+    return this.db.list('refeicoes/',{
+      query: {
+        orderByChild: 'timestamp',
+        startAt: moment.now().valueOf()
+      }
+    });
   }
 
   /**

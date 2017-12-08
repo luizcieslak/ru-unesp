@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, LoadingController, Loading, AlertController } from 'ionic-angular';
 
-import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
 
 import { Observable } from "rxjs/Rx";
 
@@ -23,9 +23,12 @@ import { IonicPage } from 'ionic-angular';
 })
 export class RefeicaoListPage {
 
-  refeicoes: Promise<any>; //refeicoes array.
-  canGoForward: boolean;
-  canGoBack: boolean = false;
+  // Flags para a paginação - não está em uso
+  //canGoForward: boolean;
+  //canGoBack: boolean = false;
+
+  refeicoes: FirebaseListObservable<any>; //refeicoes array.
+
   canBuy: Array<boolean> = [];
   canQueue: Array<boolean> = [];
   message: Array<string> = [];
@@ -37,8 +40,16 @@ export class RefeicaoListPage {
     public _user: UserService, public alertCtrl: AlertController,
     private fcm: FCM) {
 
-    //buscar a próxima página de refeições assim que a página carregar
-    this.nextPage(true);
+    // buscar a próxima página de refeições assim que a página carregar
+    //this.nextPage(true);
+
+    this.refeicoes = this._refeicao.nextRefeicoes();
+    this.refeicoes.subscribe(snapshots => {
+        //para cada refeicao, verificar se pode comprar e pode entrar na fila
+        snapshots.forEach((snapshot, index) => {
+          this.checkAvailability(snapshot, index);
+        });
+      })
   }
 
   /**
@@ -152,67 +163,74 @@ export class RefeicaoListPage {
       .catch(error => console.log('error in queue()', error));
   }
 
-  nextPage(firstPage?: boolean): void {
-    //LoadingContoller para mostrar uma mensagem enquanto carrega os dados.
-    const loading = this.loadingCtrl.create({
-      content: 'Carregando...'
-    });
-    loading.present();
+  /**
+   * Retorna a próxima página do sistema de paginação
+   * @param firstPage booleando contendo a informação se é a primeira página.
+   */
+  // nextPage(firstPage?: boolean): void {
+  //   //LoadingContoller para mostrar uma mensagem enquanto carrega os dados.
+  //   const loading = this.loadingCtrl.create({
+  //     content: 'Carregando...'
+  //   });
+  //   loading.present();
 
-    //Pegar a lista de refeições de maneira assíncrona
-    if (firstPage) {
-      this.refeicoes = this._refeicao.nextPage(true); //true para a flag firstPage
-    } else {
-      //Se não for a primeira página, o usuário pode voltar para a página anterior
-      this.canGoBack = true;
-      this.refeicoes = this._refeicao.nextPage();
-    }
+  //   //Pegar a lista de refeições de maneira assíncrona
+  //   if (firstPage) {
+  //     this.refeicoes = this._refeicao.nextPage(true); //true para a flag firstPage
+  //   } else {
+  //     //Se não for a primeira página, o usuário pode voltar para a página anterior
+  //     this.canGoBack = true;
+  //     this.refeicoes = this._refeicao.nextPage();
+  //   }
 
-    //Verificar a resposta da Promise do nextPage()
-    this.refeicoes
-      .then(snapshots => {
-        //Atualizar as flags
-        //Isso é realizado aqui porque só temos certeza que todas as operações
-        //assíncronas foram realizadas no bloco then().
-        this.canGoForward = this._refeicao.canGoForward();
+  //   //Verificar a resposta da Promise do nextPage()
+  //   this.refeicoes
+  //     .then(snapshots => {
+  //       //Atualizar as flags
+  //       //Isso é realizado aqui porque só temos certeza que todas as operações
+  //       //assíncronas foram realizadas no bloco then().
+  //       this.canGoForward = this._refeicao.canGoForward();
 
-        //para cada refeicao, verificar se pode comprar e pode entrar na fila
-        snapshots.forEach((snapshot, index) => {
-          this.checkAvailability(snapshot, index);
-        });
+  //       //para cada refeicao, verificar se pode comprar e pode entrar na fila
+  //       snapshots.forEach((snapshot, index) => {
+  //         this.checkAvailability(snapshot, index);
+  //       });
 
-        //Dismiss no LoadingController após tudo ser carregado
-        loading.dismiss();
-      });
+  //       //Dismiss no LoadingController após tudo ser carregado
+  //       loading.dismiss();
+  //     });
 
-  }
+  // }
 
-  previousPage(): void {
-    const loading = this.loadingCtrl.create({
-      content: 'Carregando...'
-    });
-    loading.present();
+  /**
+   * Busca pela página anterior pelo sistema de paginação, coordenado por cursores.
+   */
+  // previousPage(): void {
+  //   const loading = this.loadingCtrl.create({
+  //     content: 'Carregando...'
+  //   });
+  //   loading.present();
 
-    //Pegar a lista de refeições de maneira assíncrona
-    this.refeicoes = this._refeicao.previousPage();
+  //   //Pegar a lista de refeições de maneira assíncrona
+  //   this.refeicoes = this._refeicao.previousPage();
 
-    this.refeicoes.then(snapshots => {
+  //   this.refeicoes.then(snapshots => {
 
-      //Atualizar as flags
-      //Isso é realizado aqui porque só temos certeza que todas as operações
-      //assíncronas foram realizadas no bloco then().
-      this.canGoForward = this._refeicao.canGoForward();
-      this.canGoBack = this._refeicao.canGoBack();
+  //     //Atualizar as flags
+  //     //Isso é realizado aqui porque só temos certeza que todas as operações
+  //     //assíncronas foram realizadas no bloco then().
+  //     this.canGoForward = this._refeicao.canGoForward();
+  //     this.canGoBack = this._refeicao.canGoBack();
 
-      //para cada refeicao, verificar se pode comprar e pode entrar na fila
-      snapshots.forEach((snapshot, index) => {
-        this.checkAvailability(snapshot, index);
-      });
+  //     //para cada refeicao, verificar se pode comprar e pode entrar na fila
+  //     snapshots.forEach((snapshot, index) => {
+  //       this.checkAvailability(snapshot, index);
+  //     });
 
-      //Dismiss no LoadingController após tudo ser carregado
-      loading.dismiss();
-    });
-  }
+  //     //Dismiss no LoadingController após tudo ser carregado
+  //     loading.dismiss();
+  //   });
+  // }
 
   checkAvailability(snapshot: any, index: number) {
     //iniciar as variaveis canBuy e canQueue
