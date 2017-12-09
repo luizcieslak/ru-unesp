@@ -20,8 +20,8 @@ export class TimeService {
    * @argument {Number} timestamp timestamp da refeição
    */
   isAllowed(timestamp: any): boolean {
-    //TODO: Ao invés de usar moment.now(), usar o moment do servidor.
-    return moment().isBefore(moment(timestamp).subtract(1, 'days'));
+    //TODO: Ao invés de usar moment(), usar o moment do servidor.
+    return moment(timestamp).isAfter(moment());
   }
 
   /**

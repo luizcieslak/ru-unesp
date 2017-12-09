@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController, Loading, AlertController } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController } from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
-
-import { Observable } from "rxjs/Rx";
 
 //moment.js library for handling timestamps
 import * as moment from 'moment';

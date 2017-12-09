@@ -46,7 +46,6 @@
         <b>Sobremesa:</b> {{ r.sobremesa }} <br>
         <b>Suco:</b> {{ r.suco }} <br><br>
         <b>Sua posição na fila:</b> {{r | userPos:(user|async)}}<br><br>
-        <button ion-button (click)="confirmRemoveQueue(r)" outline color="danger">Desistir da fila</button>
       </div>
     </ion-item>
     <ion-item *ngIf="(queueRefeicoes| async)?.length  == 0">
@@ -61,6 +60,6 @@
     </div>
   </div>-->
 
-  <pre>{{ user | async | json}}</pre>
+  <!-- <pre>{{ user | async | json}}</pre> -->
 
 </ion-content>
