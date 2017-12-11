@@ -21,7 +21,7 @@ export class TimeService {
    */
   isAllowed(timestamp: any): boolean {
     //TODO: Ao invés de usar moment(), usar o moment do servidor.
-    return moment(timestamp).isAfter(moment());
+    return moment(timestamp).subtract(1,'days').isAfter(moment());
   }
 
   /**
