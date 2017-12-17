@@ -4,12 +4,11 @@ import { NavController, NavParams, AlertController, ToastController, Events } fr
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { EmailValidator } from '../../validators/email';
 
-import { HomePage } from '../home/home';
-import { SignupPage } from '../signup/signup';
-
-//new imports
 import { AngularFireAuth } from 'angularfire2/auth';
+import { AuthService } from '../../providers/auth-service';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-login',
   templateUrl: 'login.html'
@@ -28,7 +27,8 @@ export class LoginPage {
 
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public alertCtrl: AlertController, private formBuilder: FormBuilder,
-    public toastCtrl: ToastController, public events: Events, private afAuth: AngularFireAuth) {
+    public toastCtrl: ToastController, public events: Events, 
+    private _auth: AuthService, private afAuth: AngularFireAuth) {
 
     //Create FormBuilder with your inputs and their Validators.
     this.loginForm = this.formBuilder.group({
@@ -36,11 +36,14 @@ export class LoginPage {
       password: ['', Validators.required]
     });
 
-
-    //TODO: Persistir login do usuário
-    afAuth.authState.subscribe(auth => {
-      auth === null ? console.log('no auth') : this.navCtrl.setRoot(HomePage);
-    })
+    //Persistir o login do usuário
+    //TODO: executar função abaixo somente na primeira vez.
+    this._auth.persistLogin()
+      .then( val => {
+        console.log(val)
+        this.onLoginSuccess()
+      })
+      .catch(reason => console.log(reason));
 
   }
 
@@ -51,7 +54,7 @@ export class LoginPage {
     this.submitAttempt = true;
     if (this.loginForm.valid) {
 
-      this.afAuth.auth.signInWithEmailAndPassword(this.loginForm.value.email, this.loginForm.value.password)
+      this._auth.signInWithEmail(this.loginForm.value.email, this.loginForm.value.password)
         .then(() => this.onLoginSuccess())  //  Se o login deu certo, executar onLoginSuccess
         .catch(error => { this.loginError = error.message }); //se não, mostre o erro. 
 
@@ -64,8 +67,7 @@ export class LoginPage {
    * Executa as funções após o login.
    */
   onLoginSuccess(): void {
-    this.events.publish('login'); //Criar um evento chamado 'login' para o sidemenu.
-    this.navCtrl.setRoot(HomePage); //Ir para HomePage.
+    this.navCtrl.setRoot('HomePage'); //Ir para HomePage.
   }
 
   /**
@@ -129,7 +131,7 @@ export class LoginPage {
   help(): void {
     let help = this.alertCtrl.create({
       title: 'Ajuda',
-      subTitle: 'AJUDA LUCIANO',
+      subTitle: 'Este aplicativo é o aplicativo para compra de refeições do RU da UNESP Bauru. Para entrar, digite seu email e senha previamente cadastrados. Caso não tenha cadastro, vá ate a DTAd do campus para realizar o cadastro.',
       buttons: ['OK']
     });
     help.present();
@@ -139,24 +141,21 @@ export class LoginPage {
    * Vai para a página de signup
    */
   signup(): void {
-    this.navCtrl.push(SignupPage);
+    this.navCtrl.push('SignupPage');
   }
 
   //função para o desenvolvimento
   fastLogin(): void {
-    this.afAuth.auth.signInWithEmailAndPassword("cieslakluiz@gmail.com", "123456")
+    this._auth.signInWithEmail("cieslakluiz@gmail.com", "123456")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
 
   //função para o desenvolvimento
   vegLogin(): void {
-    this.afAuth.auth.signInWithEmailAndPassword("luiz_cieslak@hotmail.com", "luizveg")
+    this._auth.signInWithEmail("luiz_cieslak@hotmail.com", "luizveg")
       .then(() => this.onLoginSuccess())  //if login is sucessfull, go to home page
       .catch(error => { this.loginError = error.message }); //else, show the error.
   }
-
-
-
 
 }

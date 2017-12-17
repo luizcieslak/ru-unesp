@@ -1,0 +1,50 @@
+<!--
+  Generated template for the History page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Histórico de Transações</ion-title>
+    <!-- <ion-buttons end>
+      <button ion-button icon-only>
+        <ion-icon name="funnel"></ion-icon>
+      </button>
+    </ion-buttons> -->
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content>
+  <!-- <ion-toolbar>
+    <ion-list>
+      <ion-item>
+        <ion-label>Filtrar por:</ion-label>
+        <ion-select #c (ionChange)="filterBy(c.value)">
+          <ion-option value="">Todos</ion-option>
+          <ion-option value="compra">Compra</ion-option>
+          <ion-option value="recarga">Recarga</ion-option>
+          <ion-option value="desistencia">Desistência</ion-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+  </ion-toolbar> -->
+  <ion-list>
+    <!-- <ion-item>
+      <ion-label>Filtrar por:</ion-label>
+      <ion-select #c (ionChange)="filterBy(c.value)">
+        <ion-option value="">Todos</ion-option>
+        <ion-option value="compra">Compra</ion-option>
+        <ion-option value="recarga">Recarga</ion-option>
+        <ion-option value="desistencia">Desistência</ion-option>
+      </ion-select>
+    </ion-item> -->
+    <ion-item *ngFor="let h of history | async">
+      <h3>{{h.type | titleCase}} - {{h.timestamp | format: 'L'}} - {{ h.timestamp | fromNow }}</h3>
+      <p text-wrap>{{h.description}}</p>
+    </ion-item>
+  </ion-list>
+</ion-content>

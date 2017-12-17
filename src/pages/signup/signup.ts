@@ -6,12 +6,12 @@ import { EmailValidator } from '../../validators/email';
 import { RaValidator } from '../../validators/ra';
 import { matchingPasswords } from '../../validators/matching-passwords';
 
-import { LoginPage } from '../login/login';
-
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase/app';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-signup',
   templateUrl: 'signup.html'
@@ -61,7 +61,7 @@ export class SignupPage {
         .catch(error => this.signupError = error.message);
 
       //go to login page after all.
-      //this.navCtrl.push(LoginPage);
+      //this.navCtrl.push('LoginPage');
     } else {
       console.log('signupForm is not valid.');
     }
@@ -101,7 +101,7 @@ export class SignupPage {
   onPostSignUpSuccess(): void {
     console.log('onPostSignUpSuccess()');
     this.afAuth.auth.signOut();
-    this.navCtrl.push(LoginPage);
+    this.navCtrl.push('LoginPage');
   }
 
 }

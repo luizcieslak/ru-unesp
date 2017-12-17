@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController, Loading, AlertController } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController } from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseListObservable } from 'angularfire2/database';
-
-import { RefeicaoDetailPage } from '../refeicao-detail/refeicao-detail';
 
 //moment.js library for handling timestamps
 import * as moment from 'moment';
@@ -13,17 +11,22 @@ import { TimeService } from '../../providers/time-service';
 import { RefeicaoService } from '../../providers/refeicao-service';
 import { UserService } from '../../providers/user-service';
 
-import { HomePage } from '../home/home';
+import { FCM } from '@ionic-native/fcm';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-refeicao-list',
   templateUrl: 'refeicao-list.html'
 })
 export class RefeicaoListPage {
 
+  // Flags para a paginação - não está em uso
+  //canGoForward: boolean;
+  //canGoBack: boolean = false;
+
   refeicoes: FirebaseListObservable<any>; //refeicoes array.
-  loading: Loading;                       //loading component.
-  empty: boolean;
+
   canBuy: Array<boolean> = [];
   canQueue: Array<boolean> = [];
   message: Array<string> = [];
@@ -32,53 +35,19 @@ export class RefeicaoListPage {
   constructor(public navCtrl: NavController, public navParams: NavParams,
     public loadingCtrl: LoadingController, public afDB: AngularFireDatabase,
     public time: TimeService, public _refeicao: RefeicaoService,
-    public _user: UserService, public alertCtrl: AlertController) {
+    public _user: UserService, public alertCtrl: AlertController,
+    private fcm: FCM) {
 
-    //create present the loading
-    this.loading = this.loadingCtrl.create();
-    this.loading.present();
+    // buscar a próxima página de refeições assim que a página carregar
+    //this.nextPage(true);
 
-    //Pegar a lista de refeições de maneira assíncrona
     this.refeicoes = this._refeicao.nextRefeicoes();
-
-    //Assim que os dados forem carregados, fechar o loading component.
     this.refeicoes.subscribe(snapshots => {
-      //checar se o array snapshots é vazio
-      this.empty = snapshots.length == 0;
-      //para cada refeicao, verificar se pode comprar e pode entrar na fila
-      snapshots.forEach((snapshot, index) => {
-
-        //iniciar as variaveis canBuy e canQueue
-        const obs1 = this._user.canBuy(snapshot);
-        obs1.subscribe(result => {
-
-          //Se result for uma string, então ocorreu algum problema
-          if (typeof result === 'string' || result instanceof String) {
-            this.canBuy[index] = false;
-            this.message[index] = result as string;
-          } else {
-            this.canBuy[index] = result;
-          }
-
-          const obs2 = this._user.canQueue(snapshot);
-          obs2.subscribe(result => {
-            //Se result for uma string, então ocorreu algum problema
-            if (typeof result === 'string' || result instanceof String) {
-              this.canQueue[index] = false;
-              this.message[index] = result as string;
-            } else {
-              this.canQueue[index] = result;
-            }
-
-            this.boughtOrQueued[index] = this.message[index] == 'Comprado' || this.message[index] == 'Entrou na fila';
-            console.log(moment(snapshot.timestamp).calendar(), 'canBuy?', this.canBuy[index], 'canQueue?', this.canQueue[index]);
-          })
-        })
-
-      });
-      this.loading.dismiss();
-    });
-
+        //para cada refeicao, verificar se pode comprar e pode entrar na fila
+        snapshots.forEach((snapshot, index) => {
+          this.checkAvailability(snapshot, index);
+        });
+      })
   }
 
   /**
@@ -86,7 +55,7 @@ export class RefeicaoListPage {
    * @param {any} refeicao A refeição escolhida
    */
   gotoDetails(refeicao: any): void {
-    this.navCtrl.push(RefeicaoDetailPage, {
+    this.navCtrl.push('RefeicaoDetailPage', {
       refeicao: refeicao
     })
   }
@@ -118,6 +87,8 @@ export class RefeicaoListPage {
       .then(snapshot => {
         this._refeicao.book(refeicao, snapshot.val())
           .then(_ => {
+            //TODO: Subscribe no tópico da refeição (FCM)
+            this.fcm.subscribeToTopic(refeicao.timestamp)
             //Adicionar transação no histórico
             this._user.addHistory('compra', `Refeição do dia ${moment(refeicao.timestamp).format('L')}`);
             //Mostrar mensagem de confirmação.
@@ -128,7 +99,7 @@ export class RefeicaoListPage {
               buttons: [{
                 text: 'OK',
                 handler: _ => {
-                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                  this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
                 }
               }]
             });
@@ -181,13 +152,111 @@ export class RefeicaoListPage {
           buttons: [{
             text: 'OK',
             handler: _ => {
-              this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+              this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
             }
           }]
         });
         alert.present();
       })
       .catch(error => console.log('error in queue()', error));
+  }
+
+  /**
+   * Retorna a próxima página do sistema de paginação
+   * @param firstPage booleando contendo a informação se é a primeira página.
+   */
+  // nextPage(firstPage?: boolean): void {
+  //   //LoadingContoller para mostrar uma mensagem enquanto carrega os dados.
+  //   const loading = this.loadingCtrl.create({
+  //     content: 'Carregando...'
+  //   });
+  //   loading.present();
+
+  //   //Pegar a lista de refeições de maneira assíncrona
+  //   if (firstPage) {
+  //     this.refeicoes = this._refeicao.nextPage(true); //true para a flag firstPage
+  //   } else {
+  //     //Se não for a primeira página, o usuário pode voltar para a página anterior
+  //     this.canGoBack = true;
+  //     this.refeicoes = this._refeicao.nextPage();
+  //   }
+
+  //   //Verificar a resposta da Promise do nextPage()
+  //   this.refeicoes
+  //     .then(snapshots => {
+  //       //Atualizar as flags
+  //       //Isso é realizado aqui porque só temos certeza que todas as operações
+  //       //assíncronas foram realizadas no bloco then().
+  //       this.canGoForward = this._refeicao.canGoForward();
+
+  //       //para cada refeicao, verificar se pode comprar e pode entrar na fila
+  //       snapshots.forEach((snapshot, index) => {
+  //         this.checkAvailability(snapshot, index);
+  //       });
+
+  //       //Dismiss no LoadingController após tudo ser carregado
+  //       loading.dismiss();
+  //     });
+
+  // }
+
+  /**
+   * Busca pela página anterior pelo sistema de paginação, coordenado por cursores.
+   */
+  // previousPage(): void {
+  //   const loading = this.loadingCtrl.create({
+  //     content: 'Carregando...'
+  //   });
+  //   loading.present();
+
+  //   //Pegar a lista de refeições de maneira assíncrona
+  //   this.refeicoes = this._refeicao.previousPage();
+
+  //   this.refeicoes.then(snapshots => {
+
+  //     //Atualizar as flags
+  //     //Isso é realizado aqui porque só temos certeza que todas as operações
+  //     //assíncronas foram realizadas no bloco then().
+  //     this.canGoForward = this._refeicao.canGoForward();
+  //     this.canGoBack = this._refeicao.canGoBack();
+
+  //     //para cada refeicao, verificar se pode comprar e pode entrar na fila
+  //     snapshots.forEach((snapshot, index) => {
+  //       this.checkAvailability(snapshot, index);
+  //     });
+
+  //     //Dismiss no LoadingController após tudo ser carregado
+  //     loading.dismiss();
+  //   });
+  // }
+
+  checkAvailability(snapshot: any, index: number) {
+    //iniciar as variaveis canBuy e canQueue
+    const obs1 = this._user.canBuy(snapshot);
+    obs1.subscribe(result => {
+
+      //Se result for uma string, então ocorreu algum problema
+      if (typeof result === 'string' || result instanceof String) {
+        this.canBuy[index] = false;
+        this.message[index] = result as string;
+      } else {
+        this.canBuy[index] = result;
+      }
+
+      const obs2 = this._user.canQueue(snapshot);
+      obs2.subscribe(result => {
+        //Se result for uma string, então ocorreu algum problema
+        if (typeof result === 'string' || result instanceof String) {
+          this.canQueue[index] = false;
+          this.message[index] = result as string;
+        } else {
+          this.canQueue[index] = result;
+        }
+
+        this.boughtOrQueued[index] = this.message[index] == 'Comprado' || this.message[index] == 'Entrou na fila';
+        console.log(moment(snapshot.timestamp).calendar(), 'canBuy?', this.canBuy[index], 'canQueue?', this.canQueue[index]);
+      })
+    })
   }
 
 }

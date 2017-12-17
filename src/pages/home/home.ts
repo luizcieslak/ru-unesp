@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, Loading, AlertController } from 'ionic-angular';
+import { NavController, LoadingController, Loading, AlertController, Platform, Events } from 'ionic-angular';
 
 import { AngularFireDatabase, FirebaseObjectObservable } from 'angularfire2/database';
 
@@ -12,6 +12,14 @@ import { RefeicaoService } from '../../providers/refeicao-service';
 import { AuthService } from '../../providers/auth-service';
 import { UserService } from '../../providers/user-service';
 
+import { Observable, Subscription } from "rxjs/Rx";
+
+import { FCM } from '@ionic-native/fcm';
+
+import { ConnectivityService } from '../../providers/connectivity-service'
+
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -22,54 +30,131 @@ export class HomePage {
   shownGroup = null; //Variável para a accordion list.
 
   user: FirebaseObjectObservable<any>;
+  userSub: Subscription;
   isVeg: boolean;
-  refeicoesKey: Array<any>;
-  refeicoes: Array<any> = [];
-
-  queueKey: Array<any>;
-  queueRefeicoes: Array<any> = [];
+  refeicoes: Observable<Array<{}>>;
+  queueRefeicoes: Observable<Array<{}>>;
 
   constructor(public navCtrl: NavController, private _auth: AuthService,
     public afDB: AngularFireDatabase, public loadingCtrl: LoadingController,
     public alertCtrl: AlertController, public time: TimeService,
-    public _refeicao: RefeicaoService, public _user: UserService) {
+    public _refeicao: RefeicaoService, public _user: UserService,
+    private fcm: FCM, private _conn: ConnectivityService,
+    private platform: Platform, private events: Events) {
 
-    //create and present the loading
-    this.loading = this.loadingCtrl.create();
-    this.loading.present();
+    this.checkConn();
+    //if the user is in this page, this means that we need to retrive the profilePic.
+    this.events.publish('login');
+  }
 
+  /**
+   * Checks user's connection to internet in order to load the data.
+   */
+  checkConn(): void {
+    if (this._conn.isOnline()) {
+      this.retrieveInfo()
+        .then(_ => 'home.ts info loaded')
+        .catch(reason => console.log('retrieveInfo(): ', reason))
+    } else {
+      this.connAlert();
+    }
+  }
+
+  /**
+   * Alert Controller display a connectivity error.
+   */
+  connAlert(): void {
+    let confirm = this.alertCtrl.create({
+      title: 'Erro na conexão',
+      message: 'Você está sem conexão. Verifique sua conectividade e tente novamente',
+      buttons: [
+        {
+          text: 'Sair do app',
+          handler: () => {
+            this.platform.exitApp();
+          }
+        },
+        {
+          text: 'Tentar novamente',
+          handler: () => {
+            this.checkConn();
+          }
+        }
+      ],
+      enableBackdropDismiss: false
+    });
+    confirm.present();
+  }
+
+  async retrieveInfo(): Promise<any> {
     //Observable do Usuário
-    this.user = this.afDB.object('/users/' + this._auth.uid);
-    this.user.subscribe(user => {
+    const uid = await this._auth.uid();
+    this.user = this.afDB.object(`/users/${uid}`);
+    this.userSub = this.user.subscribe(user => {
       this.isVeg = user.veg;
       if (user.refeicoes) {
-        //pegar as chaves da árvore refeicoes, as quais foram compradas pelo usuário.
-        this.refeicoesKey = Object.keys(user.refeicoes);
-        //Resetar o array caso haja alguma atualização.
-        this.refeicoes = [];
-        this.refeicoesKey.forEach(key => { //então, para cada chave
-          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`); //pegar outras informações da refeição
-          refeicaoObservable.subscribe(refeicao => {
-            this.refeicoes.push(refeicao); //e dar um push para o array.
-          })
-        })
-      }
+        this.refeicoes = Observable.of(user.refeicoes)
+          .map(obj => {
+            let arr = [];
+            Object.keys(obj).forEach((key) => {
+              //get an Observable containing the info for each key in user.refeicoes object.
+              arr.push(this.afDB.object(`refeicoes/${key}`));
+            })
 
+            //zip() all Observables in the array
+            let zip = Observable.zip(...arr);
+            return zip;
+          })
+          //use switchMap() to flatten the Observables
+          .switchMap(val => val)
+          //Filter and sort the data.
+          .map(data => {
+            data = data.filter(refeicao => {
+              return refeicao['timestamp'] > moment().valueOf()
+            });
+
+            data.sort((a, b) => {
+              return a['timestamp'] < b['timestamp'] ? -1 : 1;
+            })
+            return data;
+          })
+      }
       //repetir o mesmo processo para as refeições na lista de espera
       if (user.queue) {
-        this.queueKey = Object.keys(user.queue);
-        this.queueKey.forEach(key => {
-          let refeicaoObservable = this.afDB.object(`/refeicoes/${key}`);
-          refeicaoObservable.subscribe(refeicao => {
-            this.queueRefeicoes.push(refeicao);
+        this.queueRefeicoes = Observable.of(user.queue)
+          .map(obj => {
+            let arr = [];
+            Object.keys(obj).forEach((key) => {
+              //get an Observable containing the info for each key in user.refeicoes object.
+              arr.push(this.afDB.object(`refeicoes/${key}`));
+            })
+
+            //zip() all Observables in the array
+            let zip = Observable.zip(...arr);
+            return zip;
           })
-        })
+          //use switchMap() to flatten the Observables
+          .switchMap(val => val)
+          //Filter and sort the data.
+          .map(data => {
+            data = data.filter(refeicao => {
+              return refeicao['timestamp'] > moment().valueOf()
+            });
+
+            data.sort((a, b) => {
+              return a['timestamp'] < b['timestamp'] ? -1 : 1;
+            })
+            return data;
+          })
       }
 
-      this.loading.dismiss(); //Descartar o Loading component após tudo ser carregado.
     })
+    return 1;
+  }
 
-
+  ionViewDidLeave() {
+    //this is giving a infinite loop in Loading component
+    //this.userSub.unsubscribe(); 
   }
 
   /**
@@ -92,6 +177,9 @@ export class HomePage {
     return this.shownGroup === group;
   };
 
+  /**
+   * Alert que confirma se o usuário quer remover a refeição.
+   */
   confirmRemove(refeicao: any): void {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
@@ -118,21 +206,26 @@ export class HomePage {
   remove(refeicao: any): void {
     this._refeicao.remove(refeicao, this.isVeg)
       .then(_ => {
+        //Unsubscribe no tópico da refeição (FCM)
+        this.fcm.unsubscribeFromTopic(refeicao.timestamp);
         //Adicionar transação no histórico
         this._user.addHistory('desistência', `Desistiu da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
+        //Alert de confirmação
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Você removeu esta refeição. Seu saldo será reembolsado.',
           buttons: [{
             text: 'OK',
             handler: () => {
-              this.navCtrl.setRoot(HomePage);
+              //Carregar a página inicial novamente
+              this.navCtrl.setRoot('HomePage');
             }
           }]
         });
         alert.present();
       })
       .catch(reason => {
+        console.log('error in remove()', reason)
         if (!reason) {
           let alert = this.alertCtrl.create({
             title: 'Erro',
@@ -143,7 +236,9 @@ export class HomePage {
         }
       });
   }
-
+  /**
+  * Alert que confirma se o usuário quer sair da fila.
+  */
   confirmRemoveQueue(refeicao: any) {
     let confirm = this.alertCtrl.create({
       title: 'Confirmar Desistência',
@@ -171,13 +266,14 @@ export class HomePage {
       .then(_ => {
         //Adicionar transação no histórico
         this._user.addHistory('desistência', `Desistiu da fila da refeição do dia ${moment(refeicao.timestamp).format('L')}`);
+        //Alert de confirmação
         let alert = this.alertCtrl.create({
           title: 'Sucesso',
           subTitle: 'Operação realizada com sucesso. Seu saldo será reembolsado.',
           buttons: [{
             text: 'OK',
             handler: () => {
-              this.navCtrl.setRoot(HomePage);
+              this.navCtrl.setRoot('HomePage');
             }
           }]
         });
