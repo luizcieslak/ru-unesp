@@ -52,7 +52,7 @@
         "zone.js": "^0.8.17"
     },
     "devDependencies": {
-        "@angular/cli": "1.2.5",
+        "@angular/cli": "^1.5.3",
         "@ionic/app-scripts": "3.0.0",
         "cordova": "7.0.1",
         "ionic": "3.12.0",
