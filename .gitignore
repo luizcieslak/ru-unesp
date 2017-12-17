@@ -36,3 +36,5 @@ UserInterfaceState.xcuserstate
 
 /src/firebase-config.ts
 google-services.json
+
+build\.json
