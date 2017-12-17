@@ -3,11 +3,11 @@ import { NavController, NavParams, AlertController, LoadingController, Loading, 
 
 import { AngularFireDatabase } from 'angularfire2/database';
 
-import { HomePage } from '../home/home';
-
 import { UserService } from '../../providers/user-service';
 import { RefeicaoService } from '../../providers/refeicao-service';
 
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-refeicao-detail',
   templateUrl: 'refeicao-detail.html'
@@ -106,7 +106,7 @@ export class RefeicaoDetailPage {
               buttons: [{
                 text: 'OK',
                 handler: _ => {
-                  this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+                  this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
                 }
               }]
             });
@@ -157,7 +157,7 @@ export class RefeicaoDetailPage {
           buttons: [{
             text: 'OK',
             handler: _ => {
-              this.navCtrl.setRoot(HomePage); //redirecionar o usuário para a HomePage
+              this.navCtrl.setRoot('HomePage'); //redirecionar o usuário para a HomePage
             }
           }]
         });

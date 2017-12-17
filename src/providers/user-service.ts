@@ -42,37 +42,46 @@ export class UserService {
     }));
   }
 
-  gravatarLink(): string {
-    return "https://www.gravatar.com/avatar/" + md5(this._auth.email.toLowerCase(), 'hex');
+  /**
+   * Tries to get user's profile photo in gravatar. If does not exist, return default pic.
+   */
+  async getProfilePic(): Promise<any> {
+    const email = await this._auth.email();
+    return new Promise((resolve,reject) => {
+      const link = "https://www.gravatar.com/avatar/" + md5(email, 'hex');
+      console.log(link, email)
+      resolve(link)
+    })
+    
   }
 
   /**
    * Pega a referência do usuário no banco de dados.
-   * @returns Observable.
+   * @returns Promise.
    */
-  userObservable(): FirebaseObjectObservable<any> {
-    return this.afDB.object(`users/${this._auth.uid}`);
+  async userPromise(): Promise<any> {
+    return this.afDB.object(`users/${await this._auth.uid()}`).take(1).toPromise();
   }
 
-  lastFiveHistory(): FirebaseListObservable<any> {
-    return this.afDB.list(`users/${this._auth.uid}/saldo_history`, {
+  async lastFiveHistory(): Promise<any> {
+    return this.afDB.list(`users/${await this._auth.uid()}/saldo_history`, {
       query: {
         orderByChild: 'reverseTimestamp',
         limitToFirst: 5
       }
-    });
+    }).take(1).toPromise();
   }
 
-  history(): FirebaseListObservable<any> {
-    return this.afDB.list(`users/${this._auth.uid}/saldo_history`, {
+  async history(): Promise<any> {
+    return this.afDB.list(`users/${await this._auth.uid()}/saldo_history`, {
       query: {
         orderByChild: 'reverseTimestamp'
       }
-    });
+    }).take(1).toPromise();
   }
 
-  addHistory(type: string, description: string): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/saldo_history`).push({
+  async addHistory(type: string, description: string): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/saldo_history`).push({
       type: type,
       description: description,
       timestamp: moment().valueOf(),
@@ -84,12 +93,12 @@ export class UserService {
   /**
    * Retorna o saldo do usuário logado.
    */
-  getSaldo(): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/saldo`).transaction(saldo => saldo);
+  async getSaldo(): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/saldo`).transaction(saldo => saldo);
   }
 
-  isVeg(): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/veg`).once('value');
+  async isVeg(): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/veg`).once('value');
   }
 
   /**
@@ -203,16 +212,16 @@ export class UserService {
    * Tira uma unidade do saldo do usuário
    * @returns Promise
    */
-  debitSaldo(): firebase.Promise<any> {
-    return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
+  async debitSaldo(): Promise<any> {
+    return firebase.database().ref(`/users/${await this._auth.uid()}/saldo`)
       .transaction(saldo => { return saldo - 1; });
   }
 
   /**
    * Adiciona uma unidade no saldo do usuário
    */
-  incrementSaldo(): firebase.Promise<any> {
-    return firebase.database().ref(`/users/${this._auth.uid}/saldo`)
+  async incrementSaldo(): Promise<any> {
+    return firebase.database().ref(`/users/${await this._auth.uid()}/saldo`)
       .transaction(saldo => saldo + 1);
   }
 
@@ -222,9 +231,10 @@ export class UserService {
    * @argument {any} refeicao Refeição a ser analisada
    * @returns {true} Se já comprou.
    */
-  bought(refeicao: any): firebase.Promise<any> {
-    return new firebase.Promise((resolve, reject) => {
-      firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`)
+  async bought(refeicao: any): Promise<any> {
+    const uid = await this._auth.uid();
+    return new Promise((resolve, reject) => {
+      firebase.database().ref(`users/${uid}/refeicoes/${refeicao.$key}`)
         .once('value', snapshot => {
           resolve(snapshot.val() !== null);
         })
@@ -234,17 +244,18 @@ export class UserService {
   /**
    * Promise que adiciona o id da refeição no documento do usuário.
    */
-  addRefeicao(refeicao: any): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/refeicoes`)
+  async addRefeicao(refeicao: any): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/refeicoes`)
       .child(refeicao.$key).set(true); //nao esta na lista
   }
 
   /**
    * Verifica se o usuário já esta na fila de espera da refeição.
    */
-  isQueued(refeicao: any): firebase.Promise<any> {
-    return new firebase.Promise((resolve, reject) => {
-      firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`)
+  async isQueued(refeicao: any): Promise<any> {
+    const uid = await this._auth.uid();
+    return new Promise((resolve, reject) => {
+      firebase.database().ref(`users/${uid}/queue/${refeicao.$key}`)
         .once('value', snapshot => {
           resolve(snapshot.val() !== null);
         })
@@ -255,9 +266,9 @@ export class UserService {
    * Adiciona a refeição na fila do usuário.
    * @param refeicao A refeição a ser adicionada.
    */
-  addToQueue(refeicao: any, pos: Number): firebase.Promise<any> {
+  async addToQueue(refeicao: any, pos: Number): Promise<any> {
     return Promise.all([
-      firebase.database().ref(`users/${this._auth.uid}/queue`).child(refeicao.$key).set(pos),
+      firebase.database().ref(`users/${await this._auth.uid()}/queue`).child(refeicao.$key).set(pos),
       this.debitSaldo()]);
   }
 
@@ -265,16 +276,23 @@ export class UserService {
    * Remove a refeição no caminho do usuário.
    * @param refeicao A refeição a ser removida.
    */
-  removeRefeicao(refeicao: any): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/refeicoes/${refeicao.$key}`).remove();
+  async removeRefeicao(refeicao: any): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/refeicoes/${refeicao.$key}`).remove();
   }
 
   /**
    * Remove a refeição no caminho da fila do usuário.
    * @param refeicao A refeição a ser removida.
    */
-  removeQueue(refeicao: any): firebase.Promise<any> {
-    return firebase.database().ref(`users/${this._auth.uid}/queue/${refeicao.$key}`).remove();
+  async removeQueue(refeicao: any): Promise<any> {
+    return firebase.database().ref(`users/${await this._auth.uid()}/queue/${refeicao.$key}`).remove();
+  }
+
+  /**
+   * Registra o token de notificação do usuário
+   */
+  async registerNotificationToken(token: string): Promise<any>{
+    return firebase.database().ref(`users/${await this._auth.uid()}/notificationTokens`).child(token).set(true);
   }
 
 }

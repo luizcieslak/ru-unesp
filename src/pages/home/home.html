@@ -8,7 +8,6 @@
 </ion-header>
 
 <ion-content padding>
-
   <ion-list>
     <ion-item-divider> Próximas refeições</ion-item-divider>
     <ion-item *ngFor="let r of refeicoes | async" text-wrap [ngClass]="{active: isGroupShown(r)}" (click)="toggleGroup(r)">
@@ -46,8 +45,7 @@
         <b>Saladas:</b> {{ r.salada1 }} e {{ r.salada2 }} <br>
         <b>Sobremesa:</b> {{ r.sobremesa }} <br>
         <b>Suco:</b> {{ r.suco }} <br><br>
-        <b>Sua posição na fila:</b> {{r | userPos}}<br><br>
-        <button ion-button (click)="confirmRemoveQueue(r)" outline color="danger">Desistir da fila</button>
+        <b>Sua posição na fila:</b> {{r | userPos:(user|async)}}<br><br>
       </div>
     </ion-item>
     <ion-item *ngIf="(queueRefeicoes| async)?.length  == 0">
@@ -62,6 +60,6 @@
     </div>
   </div>-->
 
-  <pre>{{ user | async | json}}</pre>
+  <!-- <pre>{{ user | async | json}}</pre> -->
 
 </ion-content>

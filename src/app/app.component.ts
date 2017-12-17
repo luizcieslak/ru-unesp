@@ -3,16 +3,10 @@ import { Nav, Platform, Events } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-//pages going into sidemenu.
-import { AjudaPage } from '../pages/ajuda/ajuda';
-import { HomePage } from '../pages/home/home';
-import { RefeicaoListPage } from '../pages/refeicao-list/refeicao-list';
-import { LoginPage } from '../pages/login/login';
-import { ProfilePage } from '../pages/profile/profile';
-
-import { FirebaseObjectObservable } from 'angularfire2/database';
 import { UserService } from '../providers/user-service';
 import { AuthService } from '../providers/auth-service';
+
+import { FCM } from '@ionic-native/fcm';
 
 @Component({
   templateUrl: 'app.html'
@@ -20,12 +14,12 @@ import { AuthService } from '../providers/auth-service';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = LoginPage; //Change this for setting the rootPage.
+  rootPage: string = 'LoginPage'; //Change this for setting the rootPage.
 
-  pages: Array<{ title: string, component: any, icon: string }>;
+  pages: Array<{ title: string, component: string, icon: string }>;
 
   //information in sidemenu header
-  user: FirebaseObjectObservable<any>;
+  user: Promise<any>;
   name: string;
   saldo: Number;
   profilePicture: any; //gravatar profile pic
@@ -33,16 +27,17 @@ export class MyApp {
 
   constructor(public platform: Platform, public statusBar: StatusBar,
     public splashScreen: SplashScreen, public _user: UserService,
-    public events: Events, private _auth: AuthService) {
+    public events: Events, private _auth: AuthService,
+    private fcm: FCM) {
     this.initializeApp();
 
     //Escutar pelo evento 'login' criado na LoginPage.
     this.events.subscribe('login', (() => { this.onLoginSuccess() })); //Se achou, executar onLoginSuccess()
 
     this.pages = [
-      { title: 'Home', component: HomePage, icon: 'home' },
-      { title: 'Refeições', component: RefeicaoListPage, icon: 'restaurant' },
-      { title: 'Ajuda', component: AjudaPage, icon: 'help' },
+      { title: 'Home', component: 'HomePage', icon: 'home' },
+      { title: 'Refeições', component: 'RefeicaoListPage', icon: 'restaurant' },
+      { title: 'Ajuda', component: 'AjudaPage', icon: 'help' },
     ];
 
   }
@@ -53,7 +48,39 @@ export class MyApp {
       // Here you can do any higher level native things you might need.
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+
+      this.pushSetup();
     });
+  }
+
+  pushSetup(): void {
+    if (typeof this.fcm != 'undefined') {
+
+      this.fcm.getToken().then(token => {
+        console.log('getToken()',token);
+        //Registrar o token
+        this._user.registerNotificationToken(token)
+          .then(_ => console.log('token registered on db.'))
+          .catch(reason => console.log('Error when registering token on db.',reason));
+      })
+
+      this.fcm.onNotification().subscribe(data => {
+        if (data.wasTapped) {
+          console.log("Received in background", data);
+        } else {
+          console.log("Received in foreground", data);
+        };
+      })
+
+      this.fcm.onTokenRefresh().subscribe(token => {
+        console.log('onTokenRefresh',token);
+        //Registrar o token
+        this._user.registerNotificationToken(token)
+          .then(_ => console.log('token registered on db.'))
+          .catch(reason => console.log('Error when registering token on db.',reason));
+      })
+
+    }
   }
 
   openPage(page) {
@@ -66,8 +93,12 @@ export class MyApp {
    * Pega a imagem do usuário no Gravatar.
    */
   onLoginSuccess(): void { //get logged user
-    this.user = this._user.userObservable();
-    this.profilePicture = this._user.gravatarLink();
+    this.user = this._user.userPromise();
+    this._user.getProfilePic()
+      .then(link =>{
+        this.profilePicture = link;
+      })
+      .catch(reason => console.log(reason));
   }
 
   /**
@@ -75,7 +106,7 @@ export class MyApp {
    */
   signOut(): void {
     this._auth.signOut()
-      .then(_ => this.nav.setRoot(LoginPage))
+      .then(_ => this.nav.setRoot('LoginPage'))
       .catch(reason => console.log('error in AppComponent#signout()', reason));
   }
 
@@ -83,6 +114,6 @@ export class MyApp {
    * Vai para a Profile Page
    */
   profilePage() {
-    this.nav.setRoot(ProfilePage);
+    this.nav.setRoot('ProfilePage');
   }
 }

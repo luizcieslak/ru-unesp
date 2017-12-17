@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
 
-import { FirebaseObjectObservable, FirebaseListObservable } from 'angularfire2/database';
 import { UserService } from '../../providers/user-service';
-import { AuthService } from '../../providers/auth-service';
 
-import { HistoryPage } from '../history/history';
-
+import { IonicPage } from 'ionic-angular';
+@IonicPage()
 @Component({
   selector: 'page-profile',
   templateUrl: 'profile.html',
@@ -14,20 +12,24 @@ import { HistoryPage } from '../history/history';
 export class ProfilePage {
 
   //information in sidemenu header
-  user: FirebaseObjectObservable<any>;
+  user: Promise<any>;
   profilePicture: any; //gravatar profile pic
-  history: FirebaseListObservable<any>;
+  history: Promise<any>;
 
-  constructor(public navCtrl: NavController, private _auth: AuthService,
-    private _user: UserService) {
+  constructor(public navCtrl: NavController, private _user: UserService) {
     //Retrieve data
-    this.user = this._user.userObservable();
-    this.profilePicture = this._user.gravatarLink();
+    this.user = this._user.userPromise();
     this.history = this._user.lastFiveHistory();
+
+    this._user.getProfilePic()
+      .then(link => {
+        this.profilePicture = link;
+      })
+      .catch(reason => console.log(reason));
   }
 
   gotoHistory(): void {
-    this.navCtrl.push(HistoryPage);
+    this.navCtrl.push('HistoryPage');
   }
 
 }
